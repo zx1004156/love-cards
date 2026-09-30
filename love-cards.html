@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>戀話匣子｜戀愛聊天卡牌</title>
+<script>
+try{ var t = localStorage.getItem("love-cards-theme"); if(t==="light"||t==="dark") document.documentElement.setAttribute("data-theme", t);
+  var l = localStorage.getItem("love-cards-lang"); if(l==="ja"||l==="en") document.documentElement.lang = l; }catch(e){}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6EEE7; --surface:#FFF9F4; --ink:#4A3530; --muted:#8A6F66; --line:#E6D5CB;
+  --light:#F4D3CB; --medium:#E8C3AE; --deep:#A8646A; --any:#7A5550;
+  --on-light:#4A3530; --on-medium:#4A3530; --on-deep:#FFF4F0; --on-any:#FFF4F0;
+  --danger:#B3261E;
+  --display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  box-sizing:border-box;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#211816; --surface:#2D211E; --ink:#F4E6DF; --muted:#BFA79E; --line:#43322D;
+  --light:#D9A99E; --medium:#CFA088; --deep:#9A5559; --any:#5E423D; --danger:#F2B8B5;
+  --on-light:#2A1C19; --on-medium:#2A1C19; --on-deep:#FFF4F0; --on-any:#FFF4F0;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--medium);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:20px 18px 48px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+h1{font-family:var(--display);font-weight:400;font-size:2.4rem;line-height:1;margin:0;letter-spacing:.04em}
+.head-right{display:flex;align-items:center;gap:8px}
+.theme-btn{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;color:var(--muted);font-size:.9rem;line-height:1}
+.theme-btn .ico{font-size:1.05rem;color:var(--ink)}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.tabs button{border:0;background:none;padding:6px 18px;border-radius:999px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+.levels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.levels button{border:2px solid transparent;border-radius:14px;padding:10px 4px;background:var(--surface);text-align:center;line-height:1.3}
+.levels button b{display:block;font-family:var(--display);font-weight:400;font-size:1.15rem}
+.levels button small{color:var(--muted);font-size:.75rem}
+.levels button[aria-pressed="true"]{border-color:var(--ink)}
+.levels button.empty-level{opacity:.45}
+.levels .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:1px}
+
+.toggles{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 18px;color:var(--muted);font-size:.9rem}
+.toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+
+/* the card */
+.stage{perspective:1400px;display:flex;justify-content:center;margin:8px 0 18px}
+.card{width:max(210px,min(100%,360px,calc((100svh - 330px) * .714)));aspect-ratio:5/7;container-type:inline-size;position:relative;cursor:pointer;border:0;padding:0;background:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.card .inner,.card .face,.card .face *{pointer-events:none}
+.card .inner{position:absolute;inset:0;transition:transform .55s cubic-bezier(.3,.7,.2,1);transform-style:preserve-3d}
+.card.flipped .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:22px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:0 18px 40px -18px rgba(20,24,40,.45)}
+.back{display:grid;place-items:center;background:var(--bk,var(--any));color:var(--bk-on,var(--on-any))}
+.back::before{content:"";position:absolute;inset:14px;border-radius:14px;border:2px solid currentColor;opacity:.35}
+.back .pattern{position:absolute;inset:0;opacity:.14;background-image:radial-gradient(currentColor 2px,transparent 2.5px);background-size:22px 22px}
+.back .mark{position:relative;text-align:center}
+.back .mark span{display:block;font-family:var(--display);font-size:clamp(2rem,16cqi,3.2rem);line-height:1.1;letter-spacing:.08em}
+.back .mark small{opacity:.8}
+.front{transform:rotateY(180deg);background:var(--fc,var(--any));color:var(--fc-on,var(--on-any));display:flex;flex-direction:column;padding:22px 24px}
+.corner{font-family:var(--display);font-size:1.6rem;line-height:1}
+.corner.bottom{align-self:flex-end;transform:rotate(180deg)}
+.qtext{flex:1;display:flex;align-items:center;font-family:var(--display);font-size:clamp(1.05rem,7.4cqi,1.75rem);line-height:1.55;overflow-wrap:anywhere;text-align:left}
+.badges{display:flex;gap:6px;flex-wrap:wrap;min-height:26px}
+.badge{font-size:.78rem;padding:2px 10px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
+.hint{text-align:center;color:var(--muted);font-size:.9rem;margin:-6px 0 14px;min-height:1.6em}
+
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:11px 22px;background:var(--ink);color:var(--bg);font-weight:500}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:.88rem;border-radius:10px}
+.btn.danger{color:var(--danger);border-color:currentColor}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+details.rules{margin-top:28px;background:var(--surface);border-radius:16px;padding:14px 18px;border:1px solid var(--line)}
+details.rules summary{cursor:pointer;font-weight:500}
+details.rules ol{margin:10px 0 0;padding-left:1.3em;color:var(--muted)}
+
+/* manage */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:18px}
+.panel h2{font-size:1.1rem;margin:0 0 12px;font-weight:700}
+textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);resize:vertical;min-height:80px}
+select{border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;background:var(--bg)}
+.row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.row label{display:flex;align-items:center;gap:6px}
+.status{font-size:.85rem;color:var(--muted);margin:-8px 0 16px}
+.notice{font-size:.9rem;padding:10px 14px;border-radius:12px;background:var(--bg);margin-bottom:14px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:grid;grid-template-columns:8px 1fr auto;gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.list .bar{width:8px;align-self:stretch;border-radius:4px}
+.list .t{overflow-wrap:anywhere}
+.list .meta{font-size:.8rem;color:var(--muted)}
+.list .ops{display:flex;gap:6px}
+.empty{color:var(--muted);text-align:center;padding:24px 8px}
+.io{display:none;margin-top:12px}
+.io.open{display:block}
+
+@media (max-width:480px){
+  h1{font-size:2rem}
+  .wrap{padding-top:14px}
+  header{margin-bottom:14px}
+  .theme-btn .lbl{display:none}
+  .theme-btn{padding:8px 11px}
+  .levels button small{display:none}
+  .list li{grid-template-columns:6px 1fr}
+  .list .ops{grid-column:2}
+}
+@media (prefers-reduced-motion: reduce){
+  .card .inner{transition:none}
+}
+:root[lang="ja"]{--display:"Zen Maru Gothic","Noto Sans JP","Hiragino Sans",sans-serif;--ui:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif}
+:root[lang="en"]{--display:"Nunito","Huninn",system-ui,sans-serif;--ui:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif}
+:root[lang="en"] .back .mark span{font-size:clamp(1.6rem,11cqi,2.4rem);letter-spacing:.02em}
+.levels button b{white-space:nowrap}
+.lang-btn{font-weight:700;min-width:44px;justify-content:center;color:var(--ink)}
+.field{display:block;margin-top:12px}
+.field span{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.field textarea{min-height:64px}
+.list .tr{font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
+@media (max-width:480px){ .levels button b{font-size:.98rem} .levels button{padding:9px 2px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 data-i18n="title">戀話匣子</h1>
+    <div class="head-right">
+      <button class="theme-btn lang-btn" id="lang-btn" type="button">中</button>
+      <button class="theme-btn" id="theme-btn" type="button"><span class="ico" id="theme-ico" aria-hidden="true">☀</span><span class="lbl" id="theme-lbl">淺色</span></button>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-play" aria-selected="true" data-i18n="tabPlay">抽牌</button>
+        <button role="tab" id="tab-manage" aria-selected="false" data-i18n="tabManage">題庫</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PLAY -->
+  <section id="view-play">
+    <div class="levels" id="levels"></div>
+    <div class="toggles">
+      <label><input type="checkbox" id="only-humor"> <span data-i18n="onlyHumor">只抽幽默題 ★</span></label>
+      <label><input type="checkbox" id="only-guess"> <span data-i18n="onlyGuess">只抽猜猜看</span></label>
+    </div>
+
+    <div class="stage">
+      <button class="card" id="card" aria-live="polite" data-i18n-aria="cardAria">
+        <div class="inner">
+          <div class="face back" id="back">
+            <div class="pattern"></div>
+            <div class="mark"><span data-i18n="title">戀話匣子</span><small id="back-label"></small></div>
+          </div>
+          <div class="face front" id="front">
+            <div class="corner" id="corner-top"></div>
+            <div class="qtext" id="qtext"></div>
+            <div class="badges" id="badges"></div>
+            <div class="corner bottom" id="corner-bottom"></div>
+          </div>
+        </div>
+      </button>
+    </div>
+    <p class="hint" id="hint"></p>
+    <div class="actions">
+      <button class="btn" id="draw"></button>
+      <button class="btn ghost" id="shuffle" data-i18n="shuffle">重新洗牌</button>
+    </div>
+
+    <details class="rules">
+      <summary data-i18n="rulesTitle">建議玩法</summary>
+      <ol id="rules"></ol>
+    </details>
+  </section>
+
+  <!-- MANAGE -->
+  <section id="view-manage" hidden>
+    <p class="status" id="status"></p>
+    <div class="notice" id="ro-notice" hidden data-i18n="roNotice"></div>
+
+    <div class="panel" id="editor">
+      <h2 id="editor-title"></h2>
+      <label class="field"><span data-i18n="fZh"></span><textarea id="f-text" maxlength="200" data-i18n-ph="phZh"></textarea></label>
+      <label class="field"><span data-i18n="fJa"></span><textarea id="f-ja" maxlength="200" data-i18n-ph="phJa"></textarea></label>
+      <label class="field"><span data-i18n="fEn"></span><textarea id="f-en" maxlength="300" data-i18n-ph="phEn"></textarea></label>
+      <div class="row">
+        <select id="f-level" data-i18n-aria="levelAria">
+          <option value="light"></option>
+          <option value="medium"></option>
+          <option value="deep"></option>
+        </select>
+        <label><input type="checkbox" id="f-humor"> <span data-i18n="humorLabel"></span></label>
+        <label><input type="checkbox" id="f-guess"> <span data-i18n="guessLabel"></span></label>
+      </div>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn" id="f-save"></button>
+        <button class="btn ghost" id="f-cancel" hidden data-i18n="cancel"></button>
+      </div>
+      <p class="hint" id="f-msg" style="text-align:left;margin:10px 0 0"></p>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="margin-top:0;justify-content:space-between">
+        <h2 style="margin:0" id="list-title"></h2>
+        <select id="list-filter" data-i18n-aria="levelAria">
+          <option value="all" data-i18n="filterAll"></option>
+          <option value="light"></option>
+          <option value="medium"></option>
+          <option value="deep"></option>
+        </select>
+      </div>
+      <ul class="list" id="list"></ul>
+    </div>
+
+    <div class="panel">
+      <h2 data-i18n="ioTitle"></h2>
+      <p class="meta" style="color:var(--muted);margin:0 0 10px;font-size:.9rem" data-i18n="ioDesc"></p>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn ghost small" id="btn-export" data-i18n="export"></button>
+        <button class="btn ghost small" id="btn-import" data-i18n="import"></button>
+      </div>
+      <div class="io" id="export-box">
+        <textarea id="export-text" readonly rows="6"></textarea>
+        <div class="actions" style="justify-content:flex-start;margin-top:8px">
+          <button class="btn small" id="btn-copy" data-i18n="copy"></button>
+        </div>
+      </div>
+      <div class="io" id="import-box">
+        <textarea id="import-text" rows="6" placeholder='[{"text":"題目內容","ja":"","en":"","level":"light","humor":false,"guess":false}]'></textarea>
+        <div class="actions" style="justify-content:flex-start;margin-top:8px">
+          <button class="btn small" id="btn-do-import" data-i18n="doImport"></button>
+        </div>
+      </div>
+      <p class="hint" id="io-msg" style="text-align:left;margin:10px 0 0"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- language ---------- */
+const LANGS = ["zh","ja","en"];
+const HTML_LANG = {zh:"zh-Hant", ja:"ja", en:"en"};
+const LANG_KEY = "love-cards-lang";
+let lang = "zh";
+try{ const l = localStorage.getItem(LANG_KEY); if(LANGS.includes(l)) lang = l; }catch(e){}
+
+const LEVEL_TEXT = {
+  zh:{all:["隨機","三種混合"], light:["輕度","喜好與經驗","輕"], medium:["中度","相處與價值觀","中"], deep:["深度","內心與過去","深"]},
+  ja:{all:["ランダム","3つをミックス"], light:["軽め","好みと思い出","軽"], medium:["普通","付き合い方と価値観","普"], deep:["深め","本音と過去","深"]},
+  en:{all:["Random","All levels mixed"], light:["Light","Likes & stories","L"], medium:["Medium","Habits & values","M"], deep:["Deep","Heart & past","D"]},
+};
+const STR = {
+  zh:{
+    langBtn:"中", langName:"中文", title:"戀話匣子", docTitle:"戀話匣子｜戀愛聊天卡牌", tabPlay:"抽牌", tabManage:"題庫",
+    onlyHumor:"只抽幽默題 ★", onlyGuess:"只抽猜猜看", cardAria:"抽一張牌", draw:"抽一張", next:"下一張", shuffle:"重新洗牌",
+    loading:"載入題庫中…", hintStart:n=>`共 ${n} 張，點牌或按「抽一張」開始`, hintLeft:n=>`這一輪還剩 ${n} 張`,
+    hintDone:"這一輪抽完了，下一張會重新洗牌",
+    emptyFilter:(lv,h,g)=>`${lv}目前沒有符合條件的題目，取消勾選${[h?"「只抽幽默題」":"",g?"「只抽猜猜看」":""].filter(Boolean).join("或")}就能繼續抽`,
+    emptyAll:"這裡還沒有題目，到「題庫」新增吧", badgeHumor:"★ 幽默", badgeGuess:"猜猜看", count:n=>`${n} 張`,
+    rulesTitle:"建議玩法",
+    rules:["從輕度開始，聊開了再往中度、深度走。", "兩個人輪流抽，抽到的人先問，問完自己也要回答。", "任何題目都可以說「跳過」，不需要解釋。", "認真聽完對方的答案，先不要急著反駁或評價。", "猜猜看卡：先猜對方的答案，再請他公布。猜錯了，就當作又多認識對方一點。"],
+    statusDb:n=>`共 ${n} 題，改動會自動存到這個頁面，分享給朋友也看得到。`, statusLocal:n=>`共 ${n} 題，存在這台裝置的瀏覽器裡。`, statusMissing:n=>"",
+    roNotice:"這份題庫目前是唯讀的，你可以抽牌，但無法新增或修改題目。",
+    editorAdd:"新增題目", editorEdit:"修改題目", fZh:"中文（必填）", fJa:"日文（選填）", fEn:"英文（選填）",
+    phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
+    levelAria:"層級", humorLabel:"幽默 ★", guessLabel:"猜猜看", saveAdd:"新增題目", saveEdit:"儲存修改", cancel:"取消",
+    needText:"先寫下中文題目內容。", saved:"已儲存修改。", added:lv=>`已新增到${lv}。`, saveFail:"沒有存成功，請稍後再試一次。",
+    listTitle:n=>`題目（${n}）`, filterAll:"全部層級", listEmpty:"這裡還沒有題目，從上面新增第一題吧。",
+    edit:"編輯", del:"刪除", delConfirm:"確定刪除", noTr:"",
+    ioTitle:"備份與匯入", ioDesc:"匯出成文字可以備份或分享給朋友；貼上別人的題庫文字即可匯入（會加在現有題目之後）。",
+    export:"匯出題庫", import:"匯入題目", copy:"複製", doImport:"匯入", copied:"已複製。", copyManual:"已全選，請手動複製。",
+    importBad:"格式看不懂，請貼上從「匯出題庫」複製的文字。", importNone:"沒有可以匯入的新題目（重複的題目會自動略過）。", importDone:n=>`已匯入 ${n} 題。`,
+    themeLight:"淺色", themeDark:"深色", themeAria:(c,n)=>`外觀：${c}，點一下切換成${n}`, langAria:n=>`語言：中文，點一下切換成${n}`,
+  },
+  ja:{
+    langBtn:"日", langName:"日本語", title:"恋話匣子", docTitle:"恋話匣子｜恋愛トークカード", tabPlay:"カード", tabManage:"質問リスト",
+    onlyHumor:"ユーモアのみ ★", onlyGuess:"当ててみようのみ", cardAria:"カードを引く", draw:"1枚引く", next:"次のカード", shuffle:"シャッフル",
+    loading:"読み込み中…", hintStart:n=>`全${n}枚。カードか「1枚引く」をタップしてスタート`, hintLeft:n=>`このラウンド残り${n}枚`,
+    hintDone:"このラウンドは終わり。次のカードから新しいラウンド",
+    emptyFilter:(lv,h,g)=>`${lv ? lv+"には" : ""}条件に合う質問がありません。${[h?"「ユーモアのみ」":"",g?"「当ててみようのみ」":""].filter(Boolean).join("か")}のチェックを外すと引けます`,
+    emptyAll:"まだ質問がありません。「質問リスト」から追加してね", badgeHumor:"★ ユーモア", badgeGuess:"当ててみよう", count:n=>`${n}枚`,
+    rulesTitle:"おすすめの遊び方",
+    rules:["まずは「軽め」から。打ち解けてきたら「普通」「深め」へ。", "ふたりで交代に引いて、引いた人が質問し、自分も答えよう。", "どの質問でも「パス」してOK。理由はいらない。", "相手の答えはまず最後まで聞いて、すぐに否定したり評価したりしないこと。", "当ててみようカード：先に相手の答えを予想してから、本人に答えてもらおう。外れたら、相手のことをまたひとつ知れたってこと。"],
+    statusDb:n=>`全${n}問。変更はこのページに自動保存され、共有した友だちにも反映されます。`, statusLocal:n=>`全${n}問。この端末のブラウザに保存されています。`,
+    statusMissing:n=>n?`（うち${n}問は日本語訳がないため、日本語モードでは出てきません）`:"",
+    roNotice:"この質問リストは閲覧専用です。カードは引けますが、質問の追加や編集はできません。",
+    editorAdd:"質問を追加", editorEdit:"質問を編集", fZh:"中国語（必須）", fJa:"日本語（任意）", fEn:"英語（任意）",
+    phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
+    levelAria:"レベル", humorLabel:"ユーモア ★", guessLabel:"当ててみよう", saveAdd:"追加する", saveEdit:"変更を保存", cancel:"キャンセル",
+    needText:"中国語の質問文を入力してください。", saved:"変更を保存しました。", added:lv=>`「${lv}」に追加しました。`, saveFail:"保存できませんでした。もう一度試してください。",
+    listTitle:n=>`質問（${n}）`, filterAll:"すべてのレベル", listEmpty:"まだ質問がありません。上から最初の質問を追加してね。",
+    edit:"編集", del:"削除", delConfirm:"本当に削除", noTr:"日本語訳なし",
+    ioTitle:"バックアップと読み込み", ioDesc:"書き出したテキストは、バックアップや友だちとの共有に使えます。ほかの人の質問リストのテキストを貼り付けると読み込めます（今の質問の後ろに追加されます）。",
+    export:"書き出す", import:"読み込む", copy:"コピー", doImport:"読み込む", copied:"コピーしました。", copyManual:"全選択しました。手動でコピーしてください。",
+    importBad:"形式が読み取れません。「書き出す」でコピーしたテキストを貼り付けてください。", importNone:"追加できる新しい質問がありません（重複は自動でスキップされます）。", importDone:n=>`${n}問を読み込みました。`,
+    themeLight:"ライト", themeDark:"ダーク", themeAria:(c,n)=>`表示：${c}（タップで${n}に切り替え）`, langAria:n=>`言語：日本語（タップで${n}に切り替え）`,
+  },
+  en:{
+    langBtn:"EN", langName:"English", title:"Love Cards", docTitle:"Love Cards", tabPlay:"Draw", tabManage:"Questions",
+    onlyHumor:"Funny only ★", onlyGuess:"Guess only", cardAria:"Draw a card", draw:"Draw a card", next:"Next card", shuffle:"Reshuffle",
+    loading:"Loading…", hintStart:n=>`${n} ${n===1?"card":"cards"}. Tap the card or "Draw a card" to start`, hintLeft:n=>`${n} ${n===1?"card":"cards"} left this round`,
+    hintDone:"Round complete. The next card starts a new round",
+    emptyFilter:(lv,h,g)=>`No questions match${lv ? " in "+lv : ""}. Uncheck ${[h?"\"Funny only\"":"",g?"\"Guess only\"":""].filter(Boolean).join(" or ")} to keep drawing`,
+    emptyAll:"No questions yet. Add some in Questions", badgeHumor:"★ Funny", badgeGuess:"Guess", count:n=>`${n} ${n===1?"card":"cards"}`,
+    rulesTitle:"How to play",
+    rules:["Start with Light, then move to Medium and Deep as you open up.", "Take turns drawing. Whoever draws asks, then answers too.", "Anyone can say \"pass\" on any question, no explanation needed.", "Really listen to each other's answers before reacting or judging.", "Guess cards: guess the other person's answer first, then let them reveal it. A wrong guess just means you learned something new."],
+    statusDb:n=>`${n} ${n===1?"question":"questions"}. Changes save to this page automatically, and friends you share it with will see them.`, statusLocal:n=>`${n} ${n===1?"question":"questions"}, saved in this device's browser.`,
+    statusMissing:n=>n?` (${n} ${n===1?"has":"have"} no English version and won't appear in English mode.)`:"",
+    roNotice:"This question list is read-only. You can draw cards, but can't add or edit questions.",
+    editorAdd:"Add a question", editorEdit:"Edit question", fZh:"Chinese (required)", fJa:"Japanese (optional)", fEn:"English (optional)",
+    phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
+    levelAria:"Level", humorLabel:"Funny ★", guessLabel:"Guess", saveAdd:"Add question", saveEdit:"Save changes", cancel:"Cancel",
+    needText:"Enter the Chinese question text first.", saved:"Changes saved.", added:lv=>`Added to ${lv}.`, saveFail:"Couldn't save. Try again.",
+    listTitle:n=>`Questions (${n})`, filterAll:"All levels", listEmpty:"No questions here yet. Add the first one above.",
+    edit:"Edit", del:"Delete", delConfirm:"Confirm delete", noTr:"No English version",
+    ioTitle:"Backup and import", ioDesc:"Export to text to back up or share with friends. Paste someone else's exported text to import it (added after your current questions).",
+    export:"Export", import:"Import", copy:"Copy", doImport:"Import", copied:"Copied.", copyManual:"Selected. Copy it manually.",
+    importBad:"Couldn't read that. Paste text copied from Export.", importNone:"No new questions to import (duplicates are skipped).", importDone:n=>`Imported ${n} ${n===1?"question":"questions"}.`,
+    themeLight:"Light", themeDark:"Dark", themeAria:(c,n)=>`Appearance: ${c}. Tap to switch to ${n}`, langAria:n=>`Language: English. Tap to switch to ${n}`,
+  },
+};
+const T = () => STR[lang];
+const lvName = (k) => LEVEL_TEXT[lang][k][0];
+const lvHint = (k) => LEVEL_TEXT[lang][k][1];
+const lvShort = (k) => LEVEL_TEXT[lang][k][2];
+function qText(q){ return lang==="zh" ? q.text : (typeof q[lang]==="string" && q[lang].trim() ? q[lang] : null); }
+
+const LEVELS = {light:1, medium:1, deep:1};
+// Built-in questions: [level, Chinese, humor, guess, Japanese, English]
+const STARTER_IDS = ["l001", "l002", "l003", "l004", "l005", "l006", "l007", "l008", "l009", "l010", "l011", "l012", "l013", "l014", "l015", "l016", "l017", "l018", "l019", "l020", "l021", "l022", "l023", "l024", "l025", "l026", "l027", "l028", "l029", "l030", "l031", "l032", "l033", "l034", "l035", "l036", "l037", "l038", "l039", "l040", "l041", "l042", "l043", "l044", "l045", "l046", "l047", "l048", "l049", "l050", "l051", "l052", "l053", "l054", "l055", "l056", "l057", "l058", "l059", "l060"];
+const STARTER = [
+ ["light", "你心目中最浪漫的約會是什麼樣子？", 0, 0, "理想のいちばんロマンチックなデートって、どんな感じ？", "What does your idea of the most romantic date look like?"],
+ ["light", "什麼樣的小舉動，最容易讓你心動？", 0, 0, "どんなちょっとした仕草に、いちばんドキッとする？", "What small gesture is most likely to make your heart skip a beat?"],
+ ["light", "你最喜歡的愛情電影或情歌是什麼？", 0, 0, "いちばん好きな恋愛映画やラブソングは？", "What's your favorite romance movie or love song?"],
+ ["light", "約會時你是規劃派，還是隨興派？", 0, 0, "デートはきっちり計画する派？それとも気の向くまま派？", "On dates, are you a planner or do you go with the flow?"],
+ ["light", "你經歷過最失敗的約會是什麼？", 1, 0, "今までで最悪だったデートは？", "What's the worst date you've ever been on?"],
+ ["light", "你覺得自己談戀愛時，最像哪一種動物？", 1, 0, "恋愛中の自分を動物にたとえると何？", "When you're in love, what animal are you most like?"],
+ ["light", "你收過或送過最奇怪的禮物是什麼？", 1, 0, "もらった・あげたプレゼントで、いちばん変わってたものは？", "What's the strangest gift you've ever given or received?"],
+ ["light", "猜猜看對方理想的約會地點是哪裡，再請他公布。", 0, 1, "相手の理想のデートスポットを当ててみて、本人に答え合わせしてもらおう。", "Guess the other person's ideal date spot, then have them reveal the answer."],
+ ["light", "你覺得自己的「心動類型」是什麼樣子？", 0, 0, "自分の「好きなタイプ」ってどんな人？", "What's your \"type\"?"],
+ ["light", "你收過最感動的一份禮物是什麼？", 0, 0, "もらったプレゼントで、いちばん感動したものは？", "What's the most touching gift you've ever received?"],
+ ["light", "你最喜歡在哪個季節約會？為什麼？", 0, 0, "デートするならどの季節がいちばん好き？どうして？", "What's your favorite season for dates? Why?"],
+ ["light", "一起做飯、看電影、出去走走，你最想選哪一種約會？", 0, 0, "一緒に料理、映画、散歩。いちばんしたいデートはどれ？", "Cooking together, watching a movie, or going for a walk: which date would you pick?"],
+ ["light", "你覺得「晚安訊息」重要嗎？", 0, 0, "「おやすみ」のメッセージって大事だと思う？", "Do you think \"good night\" texts matter?"],
+ ["light", "你最喜歡被怎麼稱呼？（名字、暱稱……）", 0, 0, "どんなふうに呼ばれるのがいちばん好き？（名前、あだ名……）", "What do you most like being called? (Your name, a nickname…)"],
+ ["light", "你理想中的紀念日要怎麼過？", 0, 0, "理想の記念日の過ごし方は？", "How would you spend your ideal anniversary?"],
+ ["light", "你談戀愛時，最常被朋友吐槽的是什麼？", 1, 0, "恋愛中、友だちにいちばんツッコまれるのはどんなところ？", "When you're dating someone, what do your friends tease you about most?"],
+ ["light", "你有沒有什麼奇怪的戀愛小迷信或小堅持？", 1, 0, "恋愛でのちょっと変なジンクスやこだわりってある？", "Do you have any odd little love superstitions or rules?"],
+ ["light", "如果你的戀愛是一種電影類型，會是什麼？（喜劇、文藝片、懸疑片……）", 1, 0, "自分の恋愛を映画のジャンルにたとえると？（コメディ、文芸、サスペンス……）", "If your love life were a movie genre, what would it be? (Comedy, drama, thriller…)"],
+ ["light", "猜猜看對方最喜歡的約會餐點是什麼，再請他公布。", 0, 1, "相手がデートでいちばん食べたいものを当ててみて、本人に答え合わせしてもらおう。", "Guess the other person's favorite date meal, then have them reveal the answer."],
+ ["light", "猜猜看對方收到什麼禮物會最開心，再請他公布。", 0, 1, "相手がどんなプレゼントをもらうといちばん喜ぶか当ててみて、本人に答え合わせしてもらおう。", "Guess what gift would make the other person happiest, then have them reveal the answer."],
+ ["medium", "你覺得一段好的感情，最重要的是什麼？", 0, 0, "いい恋愛にいちばん大切なものって何だと思う？", "What do you think matters most in a good relationship?"],
+ ["medium", "在感情裡，你需要多少自己的時間？", 0, 0, "恋愛中、自分だけの時間はどれくらい必要？", "How much time to yourself do you need in a relationship?"],
+ ["medium", "吵架時，你想馬上講清楚，還是需要先冷靜？", 0, 0, "ケンカしたとき、すぐに話し合いたい？それとも先に落ち着きたい？", "When you argue, do you want to talk it out right away or cool down first?"],
+ ["medium", "你覺得感情裡的錢，應該怎麼分配比較好？", 0, 0, "恋人同士のお金って、どう分けるのがいいと思う？", "How do you think couples should handle money?"],
+ ["medium", "你覺得「對的人」是遇到的，還是經營出來的？", 0, 0, "「運命の人」って出会うもの？それとも一緒に育てていくもの？", "Do you think \"the right person\" is someone you find, or someone you build with?"],
+ ["medium", "從過去的感情（自己的或看到的）中，你學到最多的是什麼？", 0, 0, "過去の恋愛（自分のでも、見てきたものでも）から、いちばん学んだことは？", "What's the biggest lesson you've learned from past relationships, yours or ones you've seen?"],
+ ["medium", "談戀愛之後，你最容易變得不像自己的地方是什麼？", 1, 0, "恋をすると、いちばん「自分らしくなくなる」のはどんなところ？", "When you fall for someone, what's the most un-you thing you start doing?"],
+ ["medium", "猜猜看對方在感情裡最在意哪一件事，再請他說說看。", 0, 1, "相手が恋愛でいちばん大事にしていることを当ててみて、本人に話してもらおう。", "Guess what the other person cares about most in a relationship, then let them tell you about it."],
+ ["medium", "你怎麼表達愛？又希望對方怎麼表達？", 0, 0, "自分はどうやって愛情を伝える？相手にはどう伝えてほしい？", "How do you show love? How do you want it shown to you?"],
+ ["medium", "心情不好時，你希望伴侶怎麼陪你？", 0, 0, "落ち込んでいるとき、恋人にどう寄り添ってほしい？", "When you're feeling down, how do you want your partner to be there for you?"],
+ ["medium", "你覺得多久見一次面是剛剛好？", 0, 0, "どれくらいの頻度で会うのがちょうどいいと思う？", "How often do you think is just right to see each other?"],
+ ["medium", "遠距離戀愛，你可以接受嗎？", 0, 0, "遠距離恋愛って、アリ？", "Could you do a long-distance relationship?"],
+ ["medium", "你覺得伴侶之間，手機可以互看嗎？", 0, 0, "恋人同士でスマホを見せ合うのはアリ？", "Is it okay for partners to look at each other's phones?"],
+ ["medium", "你希望另一半跟你的朋友相處到什麼程度？", 0, 0, "恋人と自分の友だちには、どれくらい仲良くしてほしい？", "How close do you want your partner to be with your friends?"],
+ ["medium", "你覺得什麼時候適合見對方的家人？", 0, 0, "相手の家族に会うのは、どのタイミングがいいと思う？", "When do you think is the right time to meet each other's families?"],
+ ["medium", "你覺得吃醋是可愛，還是需要處理的問題？", 0, 0, "ヤキモチってかわいいと思う？それとも話し合うべき問題？", "Is jealousy cute, or a problem to work on?"],
+ ["medium", "坦白和保留一點隱私，你覺得在感情裡要怎麼拿捏？", 0, 0, "恋愛で、正直に話すことと少しのプライバシー、どうバランスをとる？", "How do you balance honesty and a little privacy in a relationship?"],
+ ["medium", "你曾經為了喜歡的人，做過最衝動的事是什麼？", 1, 0, "好きな人のためにした、いちばん衝動的なことは？", "What's the most impulsive thing you've ever done for someone you liked?"],
+ ["medium", "你曾經誤以為別人喜歡你嗎？結果呢？", 1, 0, "相手が自分を好きだと勘違いしたことってある？どうなった？", "Have you ever thought someone liked you when they didn't? How did it go?"],
+ ["medium", "猜猜看對方心情不好時最需要什麼，再請他說說看。", 0, 1, "相手が落ち込んだときにいちばん必要なものを当ててみて、本人に話してもらおう。", "Guess what the other person needs most when they're feeling down, then let them tell you."],
+ ["deep", "在感情裡，你最害怕的是什麼？", 0, 0, "恋愛でいちばん怖いことは何？", "What are you most afraid of in a relationship?"],
+ ["deep", "你的家庭，怎麼影響你看待愛情？", 0, 0, "自分の家族は、恋愛観にどんな影響を与えてる？", "How has your family shaped the way you see love?"],
+ ["deep", "有什麼是你在感情裡絕對不能退讓的？", 0, 0, "恋愛で、これだけは絶対に譲れないってことは？", "What's something you'll never compromise on in a relationship?"],
+ ["deep", "你覺得「愛一個人」和「需要一個人」有什麼不同？", 0, 0, "「誰かを愛すること」と「誰かを必要とすること」、何が違うと思う？", "What's the difference between loving someone and needing someone?"],
+ ["deep", "你曾經為了對方改變過什麼？現在怎麼看？", 0, 0, "相手のために何かを変えたことはある？今はそれをどう思う？", "Have you ever changed something for a partner? How do you see it now?"],
+ ["deep", "你希望被怎樣地愛？", 0, 0, "どんなふうに愛されたい？", "How do you want to be loved?"],
+ ["deep", "有沒有什麼，是你很希望伴侶懂、卻很難說出口的？", 0, 0, "恋人にわかってほしいのに、なかなか言えないことってある？", "Is there something you wish a partner understood but find hard to say?"],
+ ["deep", "你希望十年後的感情是什麼樣子？", 0, 0, "10年後、どんな関係でいたい？", "What do you hope your love life looks like ten years from now?"],
+ ["deep", "你覺得自己在感情裡，最常重複的模式是什麼？", 0, 0, "恋愛で、自分がよく繰り返してしまうパターンは？", "What pattern do you find yourself repeating in relationships?"],
+ ["deep", "過去在感情裡受過的傷，現在還影響你嗎？", 0, 0, "過去の恋愛で負った傷は、今も自分に影響してる？", "Do old hurts from past relationships still affect you now?"],
+ ["deep", "承諾對你來說代表什麼？", 0, 0, "恋愛での「約束」や「覚悟」って、自分にとってどういう意味？", "What does commitment mean to you?"],
+ ["deep", "什麼時候，你會覺得一段感情該結束了？", 0, 0, "どんなときに「この恋はもう終わりだ」と思う？", "When do you feel a relationship should end?"],
+ ["deep", "你在感情裡最難開口的一句話是什麼？", 0, 0, "恋愛でいちばん言い出しにくい一言は？", "What's the hardest thing for you to say out loud in a relationship?"],
+ ["deep", "你是容易依賴，還是習慣獨立的人？這對你的感情有什麼影響？", 0, 0, "人に頼りやすいタイプ？それとも自立しているタイプ？それは恋愛にどう影響してる？", "Do you tend to lean on others or keep your independence? How does that affect your relationships?"],
+ ["deep", "你心目中的「家」，會是什麼樣子？", 0, 0, "自分が思い描く「家庭」って、どんな形？", "What does the home you imagine look like?"],
+ ["deep", "在愛情裡，你覺得自己最需要學習的是什麼？", 0, 0, "恋愛で、自分がいちばん学ぶべきことは何だと思う？", "What do you think you most need to learn in love?"],
+ ["deep", "你曾經因為愛，而變成更好的人嗎？", 0, 0, "恋をして、自分が成長できたと思うことはある？", "Has love ever made you a better person?"],
+ ["deep", "如果感情遇到很大的難關，你會想怎麼面對？", 0, 0, "ふたりの関係が大きな壁にぶつかったら、どう向き合いたい？", "If your relationship hit a really hard time, how would you want to face it?"],
+ ["deep", "你怎麼看待婚姻？它對你來說是必須的嗎？", 0, 0, "結婚についてどう思う？自分にとって必要なもの？", "How do you feel about marriage? Is it something you need?"],
+ ["deep", "猜猜看對方在感情裡最害怕什麼，再請他說說你猜得對不對。", 0, 1, "相手が恋愛でいちばん怖いと思っていることを当ててみて、合ってるか本人に聞いてみよう。", "Guess what the other person fears most in a relationship, then ask them if you got it right."]
+].map((r,i)=>({id:STARTER_IDS[i],level:r[0],text:r[1],humor:!!r[2],guess:!!r[3],ja:r[4]||"",en:r[5]||"",createdAt:i}));
+
+const LS_KEY = "love-cards-questions-v1", LS_V2 = "love-cards-unused-v2", LS_OLD = "love-cards-unused-v0";
+const $ = id => document.getElementById(id);
+
+let questions = [];
+let mode = "loading";   // loading | db | local
+let db = null, readOnly = false;
+let level = "all", onlyHumor = false, onlyGuess = false;
+let drawn = new Set(), current = null, flipped = false, lockUntil = 0, flipTimer = null;
+let editingId = null, pendingDelete = null;
+
+/* ---------- storage ---------- */
+// The browser keeps its own copy of the question bank. When this file ships a newer
+// built-in list, built-in questions the person never edited are refreshed; their own
+// questions, edits and deletions are kept.
+const pick = q => ({text:q.text, ja:q.ja||"", en:q.en||"", level:q.level, humor:!!q.humor, guess:!!q.guess});
+const same = (a,b) => a && b && a.text===b.text && (a.ja||"")===(b.ja||"") && (a.en||"")===(b.en||"") && a.level===b.level && !!a.humor===!!b.humor && !!a.guess===!!b.guess;
+function starterBase(){ const m = {}; for(const q of STARTER) m[q.id] = pick(q); return m; }
+function mergeWithStarter(list, base){
+  const st = new Map(STARTER.map(q=>[q.id,q]));
+  const out = [], have = new Set();
+  for(const q of list){
+    if(!q || typeof q.text!=="string") continue;
+    const cur = st.get(q.id);
+    if(cur && !(base && base[q.id] && !same(q, base[q.id]))) out.push({...cur});   // unedited built-in -> newest version
+    else out.push(q);                                                              // edited built-in or own question
+    have.add(q.id);
+  }
+  for(const q of STARTER){
+    if(have.has(q.id)) continue;
+    if(!base || base[q.id]) continue;   // was there before and got deleted: keep it deleted
+    out.push({...q});                   // brand-new built-in question
+  }
+  return out;
+}
+function readJSON(k){ try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } }
+function lsLoad(){
+  let list;
+  const v3 = readJSON(LS_KEY);
+  if(v3 && Array.isArray(v3.list)) list = mergeWithStarter(v3.list, v3.base || {});
+  else {
+    const v2 = readJSON(LS_V2);
+    if(Array.isArray(v2)) list = mergeWithStarter(v2, null);
+    else {
+      list = STARTER.map(q=>({...q}));
+      const o = readJSON(LS_OLD);
+      if(Array.isArray(o)){
+        const texts = new Set(list.map(q=>q.text));
+        for(const q of o){ if(q && q.text && !texts.has(q.text)){ list.push(q); texts.add(q.text); } }
+      }
+    }
+  }
+  questions = list; lsSave();
+  return list;
+}
+function lsSave(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({base: starterBase(), list: questions})); }catch(e){} }
+
+function useLocal(){ mode = "local"; questions = lsLoad(); onData(); }
+
+async function init(){
+  renderLevels(); renderCardBack();
+  if(!window.claude || typeof window.claude.use !== "function"){ useLocal(); return; }
+  let handle = null;
+  try{ handle = await window.claude.use("db"); }catch(e){}
+  if(!handle){ useLocal(); return; }
+  db = handle; mode = "db";
+  db.collection("questions").onSnapshot(snap=>{
+    questions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    onData();
+  }, err=>{ if(!questions.length) useLocal(); });
+}
+
+async function saveQuestion(q){
+  if(mode === "db"){
+    const {id, ...data} = q;
+    try{ await db.collection("questions").doc(id).set(data); return true; }
+    catch(e){ handleWriteError(e); return false; }
+  }
+  const i = questions.findIndex(x=>x.id===q.id);
+  if(i>=0) questions[i] = q; else questions.push(q);
+  lsSave(); onData(); return true;
+}
+async function removeQuestion(id){
+  if(mode === "db"){
+    try{ await db.collection("questions").doc(id).delete(); return true; }
+    catch(e){ handleWriteError(e); return false; }
+  }
+  questions = questions.filter(q=>q.id!==id); lsSave(); onData(); return true;
+}
+function handleWriteError(e){
+  const code = e && e.code;
+  if(code === "not_granted" || code === "revoked"){ readOnly = true; renderManage(); }
+  else { $("f-msg").textContent = T().saveFail; }
+}
+const newId = () => "q" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+/* ---------- play ---------- */
+function valid(q){ return q && typeof q.text==="string" && LEVELS[q.level] && qText(q); }
+function poolFor(lv){
+  return questions.filter(q => valid(q) && (lv==="all" || q.level===lv) && (!onlyHumor || q.humor) && (!onlyGuess || q.guess));
+}
+function pool(){ return poolFor(level); }
+function renderLevels(){
+  const box = $("levels"); box.innerHTML = "";
+  for(const k of ["all","light","medium","deep"]){
+    const b = document.createElement("button");
+    b.setAttribute("aria-pressed", String(level===k));
+    const sw = document.createElement("span"); sw.className="sw"; sw.style.background = `var(--${k==="all"?"any":k})`;
+    const t = document.createElement("b"); t.append(sw, lvName(k));
+    const s = document.createElement("small");
+    const n = mode==="loading" ? null : poolFor(k).length;
+    s.textContent = (onlyHumor || onlyGuess) && n !== null ? T().count(n) : lvHint(k);
+    if(n === 0) b.classList.add("empty-level");
+    b.append(t, s);
+    b.onclick = () => { level = k; renderLevels(); resetDeck(); };
+    box.append(b);
+  }
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function resetDeck(){
+  clearTimeout(flipTimer); lockUntil = 0;
+  drawn = new Set();
+  current = null;
+  if(flipped){ flipped=false; $("card").classList.remove("flipped"); }
+  renderCardBack(); updateHint();
+}
+function remaining(){ return pool().filter(q=>!drawn.has(q.id)).length; }
+function updateHint(){
+  const s = T();
+  if(mode==="loading"){ $("hint").textContent = s.loading; $("draw").textContent = s.draw; $("draw").disabled = true; return; }
+  const p = pool().length;
+  if(!p){
+    $("hint").textContent = (onlyHumor || onlyGuess)
+      ? s.emptyFilter(level==="all" ? "" : lvName(level), onlyHumor, onlyGuess)
+      : s.emptyAll;
+    $("draw").textContent = s.draw;
+    $("draw").disabled = true; return;
+  }
+  $("draw").disabled = false;
+  $("draw").textContent = current ? s.next : s.draw;
+  const r = remaining();
+  $("hint").textContent = current ? (r ? s.hintLeft(r) : s.hintDone) : s.hintStart(p);
+}
+function renderCardBack(){
+  const c = level==="all" ? "any" : level;
+  const back = $("back");
+  back.style.setProperty("--bk", `var(--${c})`);
+  back.style.setProperty("--bk-on", `var(--on-${c})`);
+  $("back-label").textContent = lvName(level);
+}
+function fillFront(q){
+  const f = $("front");
+  f.style.setProperty("--fc", `var(--${q.level})`);
+  f.style.setProperty("--fc-on", `var(--on-${q.level})`);
+  $("corner-top").textContent = lvShort(q.level);
+  $("corner-bottom").textContent = lvShort(q.level);
+  $("qtext").textContent = qText(q);
+  const b = $("badges"); b.innerHTML = "";
+  const add = t => { const s=document.createElement("span"); s.className="badge"; s.textContent=t; b.append(s); };
+  add(lvName(q.level));
+  if(q.humor) add(T().badgeHumor);
+  if(q.guess) add(T().badgeGuess);
+}
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function draw(){
+  const now = Date.now();
+  if(now < lockUntil) return;              // ignore double taps during the flip
+  const ids = new Set(pool().map(q=>q.id));
+  if(!ids.size){ updateHint(); return; }
+  let left = [...ids].filter(id=>!drawn.has(id));
+  if(!left.length){                        // round finished: start a new one
+    drawn = new Set();
+    left = [...ids].filter(id=>id!==current);
+    if(!left.length) left = [...ids];
+  }
+  const pickId = left[Math.floor(Math.random()*left.length)];
+  drawn.add(pickId);
+  const q = questions.find(x=>x.id===pickId);
+  if(!valid(q)){ updateHint(); return; }
+  const card = $("card");
+  const reveal = () => {
+    try{ current = q.id; fillFront(q); }
+    finally{ flipped = true; card.classList.add("flipped"); updateHint(); }
+  };
+  clearTimeout(flipTimer);
+  if(flipped && !reduced()){
+    lockUntil = now + 450;
+    card.classList.remove("flipped"); flipped = false;
+    flipTimer = setTimeout(reveal, 420);
+  } else {
+    lockUntil = now + 150;
+    reveal();
+  }
+}
+
+/* ---------- manage ---------- */
+function renderManage(){
+  const s = T();
+  const missing = lang==="zh" ? 0 : questions.filter(q=>!qText(q)).length;
+  $("status").textContent = mode==="db" ? s.statusDb(questions.length) + s.statusMissing(missing)
+                          : mode==="local" ? s.statusLocal(questions.length) + s.statusMissing(missing) : s.loading;
+  $("ro-notice").hidden = !readOnly;
+  for(const id of ["f-text","f-ja","f-en","f-level","f-humor","f-guess","f-save","btn-import","btn-do-import"]) $(id).disabled = readOnly;
+  $("editor-title").textContent = editingId ? s.editorEdit : s.editorAdd;
+  $("f-save").textContent = editingId ? s.saveEdit : s.saveAdd;
+  const filter = $("list-filter").value;
+  const order = ["light","medium","deep"];
+  const items = questions.filter(q=>filter==="all"||q.level===filter)
+    .sort((a,b)=>order.indexOf(a.level)-order.indexOf(b.level) || (a.createdAt||0)-(b.createdAt||0));
+  $("list-title").textContent = s.listTitle(items.length);
+  const ul = $("list"); ul.innerHTML = "";
+  if(!items.length){ const li=document.createElement("li"); li.className="empty"; li.style.display="block"; li.textContent=s.listEmpty; ul.append(li); return; }
+  for(const q of items){
+    if(!LEVELS[q.level]) continue;
+    const li = document.createElement("li");
+    const bar = document.createElement("span"); bar.className="bar"; bar.style.background=`var(--${q.level})`;
+    const body = document.createElement("div");
+    const t = document.createElement("div"); t.className="t"; t.textContent = qText(q) || q.text;
+    body.append(t);
+    if(lang!=="zh" && qText(q)){ const z=document.createElement("div"); z.className="tr"; z.textContent=q.text; body.append(z); }
+    const m = document.createElement("div"); m.className="meta";
+    m.textContent = [lvName(q.level), q.humor?s.badgeHumor:"", q.guess?s.badgeGuess:"", (lang!=="zh" && !qText(q)) ? s.noTr : ""].filter(Boolean).join(" · ");
+    body.append(m);
+    const ops = document.createElement("div"); ops.className="ops";
+    if(!readOnly){
+      const e = document.createElement("button"); e.className="btn ghost small"; e.textContent=s.edit; e.onclick=()=>startEdit(q);
+      const d = document.createElement("button"); d.className="btn ghost small danger";
+      d.textContent = pendingDelete===q.id ? s.delConfirm : s.del;
+      d.onclick = async ()=>{
+        if(pendingDelete!==q.id){ pendingDelete=q.id; renderManage(); return; }
+        pendingDelete=null; if(editingId===q.id) stopEdit(); await removeQuestion(q.id);
+      };
+      ops.append(e,d);
+    }
+    li.append(bar,body,ops); ul.append(li);
+  }
+}
+function startEdit(q){
+  editingId = q.id;
+  $("f-text").value = q.text; $("f-ja").value = q.ja || ""; $("f-en").value = q.en || "";
+  $("f-level").value = q.level;
+  $("f-humor").checked = !!q.humor; $("f-guess").checked = !!q.guess;
+  $("f-cancel").hidden = false; $("f-msg").textContent = "";
+  renderManage();
+  $("editor").scrollIntoView({behavior: reduced()?"auto":"smooth", block:"start"});
+  $("f-text").focus();
+}
+function stopEdit(){
+  editingId = null;
+  $("f-text").value = ""; $("f-ja").value = ""; $("f-en").value = "";
+  $("f-humor").checked = false; $("f-guess").checked = false;
+  $("f-cancel").hidden = true;
+  renderManage();
+}
+async function submit(){
+  const s = T();
+  const text = $("f-text").value.trim();
+  if(!text){ $("f-msg").textContent = s.needText; $("f-text").focus(); return; }
+  const base = editingId ? questions.find(q=>q.id===editingId) : null;
+  const q = { id: editingId || newId(), text, ja: $("f-ja").value.trim(), en: $("f-en").value.trim(), level: $("f-level").value,
+    humor: $("f-humor").checked, guess: $("f-guess").checked,
+    createdAt: base ? (base.createdAt||0) : Date.now() };
+  const wasEdit = !!editingId;
+  $("f-save").disabled = true;
+  const ok = await saveQuestion(q);
+  $("f-save").disabled = readOnly;
+  if(ok){ stopEdit(); $("f-msg").textContent = wasEdit ? s.saved : s.added(lvName(q.level)); }
+}
+
+/* export / import */
+function toggleBox(id){ for(const b of ["export-box","import-box"]) $(b).classList.toggle("open", b===id && !$(b).classList.contains("open")); $("io-msg").textContent=""; }
+function doExport(){
+  const data = questions.map(({text,ja,en,level,humor,guess})=>({text,ja:ja||"",en:en||"",level,humor:!!humor,guess:!!guess}));
+  $("export-text").value = JSON.stringify(data, null, 1);
+  toggleBox("export-box");
+}
+async function doCopy(){
+  const ta = $("export-text");
+  try{ await navigator.clipboard.writeText(ta.value); $("io-msg").textContent = T().copied; }
+  catch(e){ ta.focus(); ta.select(); $("io-msg").textContent = T().copyManual; }
+}
+async function doImport(){
+  const s = T();
+  let arr;
+  try{ arr = JSON.parse($("import-text").value); }catch(e){ $("io-msg").textContent = s.importBad; return; }
+  if(!Array.isArray(arr)){ $("io-msg").textContent = s.importBad; return; }
+  const existing = new Set(questions.map(q=>q.text));
+  const ok = arr.filter(x=>x && typeof x.text==="string" && x.text.trim() && LEVELS[x.level] && !existing.has(x.text.trim()));
+  if(!ok.length){ $("io-msg").textContent = s.importNone; return; }
+  $("btn-do-import").disabled = true;
+  let n = 0;
+  for(const x of ok){
+    const str = v => typeof v==="string" ? v.trim().slice(0,300) : "";
+    const saved = await saveQuestion({id:newId(), text:x.text.trim().slice(0,200), ja:str(x.ja), en:str(x.en), level:x.level, humor:!!x.humor, guess:!!x.guess, createdAt:Date.now()+n});
+    if(!saved) break; n++;
+  }
+  $("btn-do-import").disabled = readOnly;
+  $("io-msg").textContent = s.importDone(n);
+  if(n){ $("import-text").value = ""; }
+}
+
+/* ---------- theme ---------- */
+const THEME_KEY = "love-cards-theme";
+let theme = "light";
+try{ if(localStorage.getItem(THEME_KEY)==="dark") theme = "dark"; }catch(e){}
+function applyTheme(){
+  document.documentElement.setAttribute("data-theme", theme);
+  const s = T();
+  const cur = theme==="dark" ? s.themeDark : s.themeLight, nxt = theme==="dark" ? s.themeLight : s.themeDark;
+  $("theme-ico").textContent = theme==="dark" ? "☾" : "☀";
+  $("theme-lbl").textContent = cur;
+  $("theme-btn").setAttribute("aria-label", s.themeAria(cur, nxt));
+  $("theme-btn").title = s.themeAria(cur, nxt);
+}
+$("theme-btn").onclick = () => {
+  theme = theme==="dark" ? "light" : "dark";
+  try{ localStorage.setItem(THEME_KEY, theme); }catch(e){}
+  applyTheme();
+};
+
+/* ---------- apply language ---------- */
+function applyLang(){
+  const s = T();
+  document.documentElement.lang = HTML_LANG[lang];
+  document.title = s.docTitle;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ const v = s[el.dataset.i18n]; if(typeof v==="string") el.textContent = v; });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label", s[el.dataset.i18nAria]); });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{ el.placeholder = s[el.dataset.i18nPh]; });
+  for(const sel of ["f-level","list-filter"]) for(const o of $(sel).options) if(o.value!=="all") o.textContent = lvName(o.value);
+  const ol = $("rules"); ol.innerHTML = ""; for(const r of s.rules){ const li=document.createElement("li"); li.textContent=r; ol.append(li); }
+  const next = STR[LANGS[(LANGS.indexOf(lang)+1)%LANGS.length]].langName;
+  $("lang-btn").textContent = s.langBtn;
+  $("lang-btn").setAttribute("aria-label", s.langAria(next)); $("lang-btn").title = s.langAria(next);
+  applyTheme(); renderLevels(); renderCardBack(); renderManage();
+  if(current){
+    const q = questions.find(x=>x.id===current);
+    if(valid(q)) fillFront(q); else resetDeck();
+  }
+  updateHint();
+}
+$("lang-btn").onclick = () => {
+  lang = LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];
+  try{ localStorage.setItem(LANG_KEY, lang); }catch(e){}
+  applyLang();
+};
+
+/* ---------- wiring ---------- */
+function onData(){ renderManage(); renderLevels(); updateHint(); }
+function showTab(which){
+  const play = which==="play";
+  $("tab-play").setAttribute("aria-selected", String(play));
+  $("tab-manage").setAttribute("aria-selected", String(!play));
+  $("view-play").hidden = !play; $("view-manage").hidden = play;
+  if(play) updateHint(); else renderManage();
+}
+$("tab-play").onclick = ()=>showTab("play");
+$("tab-manage").onclick = ()=>showTab("manage");
+$("card").onclick = draw;
+$("draw").onclick = draw;
+$("shuffle").onclick = resetDeck;
+$("only-humor").onchange = e=>{ onlyHumor = e.target.checked; renderLevels(); resetDeck(); };
+$("only-guess").onchange = e=>{ onlyGuess = e.target.checked; renderLevels(); resetDeck(); };
+$("f-save").onclick = submit;
+$("f-cancel").onclick = ()=>{ stopEdit(); $("f-msg").textContent=""; };
+$("list-filter").onchange = renderManage;
+$("btn-export").onclick = doExport;
+$("btn-import").onclick = ()=>toggleBox("import-box");
+$("btn-copy").onclick = doCopy;
+$("btn-do-import").onclick = doImport;
+applyLang();
+init();
+
+</script>
+</body>
+</html>
