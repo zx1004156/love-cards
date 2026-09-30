@@ -339,7 +339,7 @@ function qText(q){ return lang==="zh" ? q.text : (typeof q[lang]==="string" && q
 
 const LEVELS = {light:1, medium:1, deep:1};
 // Built-in questions: [level, Chinese, humor, guess, Japanese, English]
-const STARTER_IDS = ["l001", "l002", "l003", "l004", "l005", "l006", "l007", "l008", "l009", "l010", "l011", "l012", "l013", "l014", "l015", "l016", "l017", "l018", "l019", "l020", "l021", "l022", "l023", "l024", "l025", "l026", "l027", "l028", "l029", "l030", "l031", "l032", "l033", "l034", "l035", "l036", "l037", "l038", "l039", "l040", "l041", "l042", "l043", "l044", "l045", "l046", "l047", "l048", "l049", "l050", "l051", "l052", "l053", "l054", "l055", "l056", "l057", "l058", "l059", "l060"];
+const STARTER_IDS = ["l001", "l002", "l003", "l004", "l005", "l006", "l007", "l008", "l009", "l010", "l011", "l012", "l013", "l014", "l015", "l016", "l017", "l018", "l019", "l020", "l021", "l022", "l023", "l024", "l025", "l026", "l027", "l028", "l029", "l030", "l031", "l032", "l033", "l034", "l035", "l036", "l037", "l038", "l039", "l040", "l041", "l042", "l043", "l044", "l045", "l046", "l047", "l048", "l049", "l050", "l051", "l052", "l053", "l054", "l055", "l056", "l057", "l058", "l059", "l060", "l061", "l062", "l063", "l064", "l065", "l066", "l067", "l068", "l069", "l070", "l071", "l072", "l073", "l074", "l075", "l076", "l077", "l078", "l079", "l080", "l081", "l082", "l083", "l084", "l085", "l086", "l087", "l088"];
 const STARTER = [
  ["light", "你心目中最浪漫的約會是什麼樣子？", 0, 0, "理想のいちばんロマンチックなデートって、どんな感じ？", "What does your idea of the most romantic date look like?"],
  ["light", "什麼樣的小舉動，最容易讓你心動？", 0, 0, "どんなちょっとした仕草に、いちばんドキッとする？", "What small gesture is most likely to make your heart skip a beat?"],
@@ -379,7 +379,7 @@ const STARTER = [
  ["medium", "你覺得吃醋是可愛，還是需要處理的問題？", 0, 0, "ヤキモチってかわいいと思う？それとも話し合うべき問題？", "Is jealousy cute, or a problem to work on?"],
  ["medium", "坦白和保留一點隱私，你覺得在感情裡要怎麼拿捏？", 0, 0, "恋愛で、正直に話すことと少しのプライバシー、どうバランスをとる？", "How do you balance honesty and a little privacy in a relationship?"],
  ["medium", "你曾經為了喜歡的人，做過最衝動的事是什麼？", 1, 0, "好きな人のためにした、いちばん衝動的なことは？", "What's the most impulsive thing you've ever done for someone you liked?"],
- ["medium", "你曾經誤以為別人喜歡你嗎？結果呢？", 1, 0, "相手が自分を好きだと勘違いしたことってある？どうなった？", "Have you ever thought someone liked you when they didn't? How did it go?"],
+ ["medium", "你曾經誤以為別人喜歡你嗎？結果呢？", 0, 0, "相手が自分を好きだと勘違いしたことってある？どうなった？", "Have you ever thought someone liked you when they didn't? How did it go?"],
  ["medium", "猜猜看對方心情不好時最需要什麼，再請他說說看。", 0, 1, "相手が落ち込んだときにいちばん必要なものを当ててみて、本人に話してもらおう。", "Guess what the other person needs most when they're feeling down, then let them tell you."],
  ["deep", "在感情裡，你最害怕的是什麼？", 0, 0, "恋愛でいちばん怖いことは何？", "What are you most afraid of in a relationship?"],
  ["deep", "你的家庭，怎麼影響你看待愛情？", 0, 0, "自分の家族は、恋愛観にどんな影響を与えてる？", "How has your family shaped the way you see love?"],
@@ -400,7 +400,35 @@ const STARTER = [
  ["deep", "你曾經因為愛，而變成更好的人嗎？", 0, 0, "恋をして、自分が成長できたと思うことはある？", "Has love ever made you a better person?"],
  ["deep", "如果感情遇到很大的難關，你會想怎麼面對？", 0, 0, "ふたりの関係が大きな壁にぶつかったら、どう向き合いたい？", "If your relationship hit a really hard time, how would you want to face it?"],
  ["deep", "你怎麼看待婚姻？它對你來說是必須的嗎？", 0, 0, "結婚についてどう思う？自分にとって必要なもの？", "How do you feel about marriage? Is it something you need?"],
- ["deep", "猜猜看對方在感情裡最害怕什麼，再請他說說你猜得對不對。", 0, 1, "相手が恋愛でいちばん怖いと思っていることを当ててみて、合ってるか本人に聞いてみよう。", "Guess what the other person fears most in a relationship, then ask them if you got it right."]
+ ["deep", "猜猜看對方在感情裡最害怕什麼，再請他說說你猜得對不對。", 0, 1, "相手が恋愛でいちばん怖いと思っていることを当ててみて、合ってるか本人に聞いてみよう。", "Guess what the other person fears most in a relationship, then ask them if you got it right."],
+ ["light", "哪一首歌，最能代表你心中的愛情？", 0, 0, "自分の思う「恋」をいちばんよく表している曲は？", "What song best captures what love means to you?"],
+ ["light", "有沒有一個地方，你很想跟喜歡的人一起去？", 0, 0, "好きな人と一緒に行ってみたい場所ってある？", "Is there a place you'd love to go with someone you like?"],
+ ["light", "什麼樣的天氣，最讓你想約會？", 0, 0, "どんな天気の日に、いちばんデートしたくなる？", "What kind of weather makes you most want to go on a date?"],
+ ["light", "如果有人為你下廚，你最希望吃到什麼？", 0, 0, "誰かが手料理を作ってくれるなら、何を食べたい？", "If someone cooked for you, what would you most want to eat?"],
+ ["light", "你最喜歡哪一種親近的方式？（牽手、擁抱、靠在一起……）", 0, 0, "いちばん好きなスキンシップは？（手をつなぐ、ハグ、寄り添う……）", "What's your favorite way to be close? (Holding hands, hugging, leaning on each other…)"],
+ ["light", "如果你的戀愛有一個專屬吉祥物，會是什麼？", 1, 0, "自分の恋愛にマスコットキャラがいるとしたら、どんなキャラ？", "If your love life had its own mascot, what would it be?"],
+ ["light", "如果要幫你的理想約會取一個電影片名，會叫什麼？", 1, 0, "理想のデートに映画のタイトルをつけるなら？", "If your ideal date were a movie, what would it be called?"],
+ ["light", "猜猜看對方最喜歡被怎麼稱呼，再請他公布。", 0, 1, "相手がいちばん呼ばれたい呼び方を当ててみて、本人に答え合わせしてもらおう。", "Guess what the other person most likes being called, then have them reveal the answer."],
+ ["light", "猜猜看對方喜歡早上、下午還是晚上約會，再請他公布。", 0, 1, "相手が朝・昼・夜のどの時間のデートが好きか当ててみて、本人に答え合わせしてもらおう。", "Guess whether the other person prefers morning, afternoon, or evening dates, then have them reveal the answer."],
+ ["medium", "你覺得「喜歡」和「愛」的分界在哪裡？", 0, 0, "「好き」と「愛してる」の境目って、どこにあると思う？", "Where do you think \"liking\" ends and \"loving\" begins?"],
+ ["medium", "對你來說，怎樣才算是「在一起」了？", 0, 0, "自分にとって、どうなったら「付き合ってる」ってことになる？", "What does it take for you to feel you're officially together?"],
+ ["medium", "在感情裡，你覺得最浪漫的日常小事是什麼？", 0, 0, "恋愛で、いちばんロマンチックだと思う日常の小さなことは？", "What's the most romantic everyday little thing in a relationship?"],
+ ["medium", "你最近一次覺得被好好照顧，是什麼時候？", 0, 0, "最近、誰かにちゃんと大切にされてるなって感じたのはいつ？", "When was the last time you felt truly cared for?"],
+ ["medium", "你比較喜歡驚喜，還是事先說好的安排？", 0, 0, "サプライズ派？それとも事前に決めておく派？", "Do you prefer surprises or plans you've agreed on together?"],
+ ["medium", "你覺得兩個人的興趣需要相同嗎？", 0, 0, "ふたりの趣味って、同じじゃないとダメだと思う？", "Do you think two people need to share the same interests?"],
+ ["medium", "在感情裡，你覺得道歉最重要的是什麼？", 0, 0, "恋愛で謝るとき、いちばん大事なことって何だと思う？", "What matters most when apologizing in a relationship?"],
+ ["medium", "生日或紀念日，你會很在意嗎？", 0, 0, "誕生日や記念日って、すごく気にするほう？", "Do birthdays and anniversaries matter a lot to you?"],
+ ["medium", "如果要替你的愛情觀寫一句廣告標語，會是什麼？", 1, 0, "自分の恋愛観をキャッチコピーにするなら、どんな一言？", "If your view on love were an ad slogan, what would it say?"],
+ ["medium", "猜猜看對方吵架後最需要什麼，再請他說說看。", 0, 1, "相手がケンカのあといちばん必要としているものを当ててみて、本人に話してもらおう。", "Guess what the other person needs most after an argument, then let them tell you."],
+ ["deep", "什麼樣的時刻，會讓你覺得「就是這個人了」？", 0, 0, "どんな瞬間に「この人だ」って思う？", "What kind of moment makes you think, \"This is the one\"?"],
+ ["deep", "對你來說，安全感是從哪裡來的？", 0, 0, "自分にとって、安心感ってどこから来るもの？", "Where does your sense of security come from?"],
+ ["deep", "你害怕在感情裡失去自己嗎？", 0, 0, "恋愛の中で、自分を見失うのが怖いと思う？", "Are you afraid of losing yourself in a relationship?"],
+ ["deep", "你曾經在感情裡，覺得自己沒有被看見嗎？", 0, 0, "恋愛の中で、ちゃんと見てもらえていないと感じたことはある？", "Have you ever felt unseen in a relationship?"],
+ ["deep", "你覺得原諒在感情裡有底線嗎？", 0, 0, "恋愛で「許せること」に限界はあると思う？", "Do you think there's a limit to forgiveness in a relationship?"],
+ ["deep", "你覺得自己在感情裡，最容易忽略的是什麼？", 0, 0, "恋愛で、自分がいちばん見落としがちなことは何だと思う？", "What do you think you're most likely to overlook in a relationship?"],
+ ["deep", "如果愛會隨著時間改變，你希望它變成什麼樣子？", 0, 0, "愛が時間とともに変わっていくとしたら、どんな形になってほしい？", "If love changes over time, what do you hope it turns into?"],
+ ["deep", "你希望在一段感情裡，被記住的是什麼樣的自己？", 0, 0, "ひとつの恋の中で、どんな自分として覚えていてほしい？", "In a relationship, what version of yourself do you hope is remembered?"],
+ ["deep", "猜猜看對方心中最理想的感情是什麼樣子，再請他說說看。", 0, 1, "相手が思い描く理想の関係を当ててみて、本人に話してもらおう。", "Guess what the other person's ideal relationship looks like, then let them tell you about it."]
 ].map((r,i)=>({id:STARTER_IDS[i],level:r[0],text:r[1],humor:!!r[2],guess:!!r[3],ja:r[4]||"",en:r[5]||"",createdAt:i}));
 
 const LS_KEY = "love-cards-questions-v1", LS_V2 = "love-cards-unused-v2", LS_OLD = "love-cards-unused-v0";
