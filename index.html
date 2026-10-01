@@ -60,7 +60,7 @@ h1{font-family:var(--display);font-weight:400;font-size:2.4rem;line-height:1;mar
 
 /* the card */
 .stage{perspective:1400px;display:flex;justify-content:center;margin:8px 0 18px}
-.card{width:max(210px,min(100%,360px,calc((100svh - 330px) * .714)));aspect-ratio:5/7;container-type:inline-size;position:relative;cursor:pointer;border:0;padding:0;background:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.card{width:max(210px,min(100%,360px,calc((100svh - 370px) * .714)));aspect-ratio:5/7;container-type:inline-size;position:relative;cursor:pointer;border:0;padding:0;background:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .card .inner,.card .face,.card .face *{pointer-events:none}
 .card .inner{position:absolute;inset:0;transition:transform .55s cubic-bezier(.3,.7,.2,1);transform-style:preserve-3d}
 .card.flipped .inner{transform:rotateY(180deg)}
@@ -112,6 +112,9 @@ select{border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;backgr
 
 @media (max-width:480px){
   h1{font-size:2rem}
+  .toggles{gap:4px 12px;font-size:.84rem;margin:4px 0 14px}
+  .toggles label{gap:4px}
+  .hint{font-size:.84rem}
   .wrap{padding-top:14px}
   header{margin-bottom:14px}
   .theme-btn .lbl{display:none}
@@ -155,6 +158,7 @@ select{border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;backgr
     <div class="toggles">
       <label><input type="checkbox" id="only-humor"> <span data-i18n="onlyHumor">只抽幽默題 ★</span></label>
       <label><input type="checkbox" id="only-guess"> <span data-i18n="onlyGuess">只抽猜猜看</span></label>
+      <label><input type="checkbox" id="only-partner"> <span data-i18n="onlyPartner">只抽伴侶卡</span></label>
     </div>
 
     <div class="stage">
@@ -203,6 +207,7 @@ select{border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;backgr
         </select>
         <label><input type="checkbox" id="f-humor"> <span data-i18n="humorLabel"></span></label>
         <label><input type="checkbox" id="f-guess"> <span data-i18n="guessLabel"></span></label>
+        <label><input type="checkbox" id="f-partner"> <span data-i18n="partnerLabel"></span></label>
       </div>
       <div class="actions" style="justify-content:flex-start">
         <button class="btn" id="f-save"></button>
@@ -264,18 +269,18 @@ const LEVEL_TEXT = {
 const STR = {
   zh:{
     langBtn:"中", langName:"中文", title:"戀話匣子", docTitle:"戀話匣子｜戀愛聊天卡牌", tabPlay:"抽牌", tabManage:"題庫",
-    onlyHumor:"只抽幽默題 ★", onlyGuess:"只抽猜猜看", cardAria:"抽一張牌", draw:"抽一張", next:"下一張", shuffle:"重新洗牌",
+    onlyHumor:"只抽幽默題 ★", onlyGuess:"只抽猜猜看", onlyPartner:"只抽伴侶卡", partnerOnlyNote:"（只會抽到伴侶卡）", partnerExtra:n=>`（另有 ${n} 張伴侶卡，勾選後才會出現）`, cardAria:"抽一張牌", draw:"抽一張", next:"下一張", shuffle:"重新洗牌",
     loading:"載入題庫中…", hintStart:n=>`共 ${n} 張，點牌或按「抽一張」開始`, hintLeft:n=>`這一輪還剩 ${n} 張`,
     hintDone:"這一輪抽完了，下一張會重新洗牌",
-    emptyFilter:(lv,h,g)=>`${lv}目前沒有符合條件的題目，取消勾選${[h?"「只抽幽默題」":"",g?"「只抽猜猜看」":""].filter(Boolean).join("或")}就能繼續抽`,
-    emptyAll:"這裡還沒有題目，到「題庫」新增吧", badgeHumor:"★ 幽默", badgeGuess:"猜猜看", count:n=>`${n} 張`,
+    emptyFilter:(lv,h,g,pt)=>`${lv}目前沒有符合條件的題目，取消勾選${[h?"「只抽幽默題」":"",g?"「只抽猜猜看」":"",pt?"「只抽伴侶卡」":""].filter(Boolean).join("或")}就能繼續抽`,
+    emptyAll:"這裡還沒有題目，到「題庫」新增吧", badgeHumor:"★ 幽默", badgeGuess:"猜猜看", badgePartner:"伴侶卡", count:n=>`${n} 張`,
     rulesTitle:"建議玩法",
-    rules:["從輕度開始，聊開了再往中度、深度走。", "兩個人輪流抽，抽到的人先問，問完自己也要回答。", "任何題目都可以說「跳過」，不需要解釋。", "認真聽完對方的答案，先不要急著反駁或評價。", "猜猜看卡：先猜對方的答案，再請他公布。猜錯了，就當作又多認識對方一點。"],
+    rules:["從輕度開始，聊開了再往中度、深度走。", "兩個人輪流抽，抽到的人先問，問完自己也要回答。", "任何題目都可以說「跳過」，不需要解釋。", "認真聽完對方的答案，先不要急著反駁或評價。", "猜猜看卡：先猜對方的答案，再請他公布。猜錯了，就當作又多認識對方一點。", "伴侶卡：寫給情侶或夫妻的題目，平常不會出現，勾選「只抽伴侶卡」才會抽到。"],
     statusDb:n=>`共 ${n} 題，改動會自動存到這個頁面，分享給朋友也看得到。`, statusLocal:n=>`共 ${n} 題，存在這台裝置的瀏覽器裡。`, statusMissing:n=>"",
     roNotice:"這份題庫目前是唯讀的，你可以抽牌，但無法新增或修改題目。",
     editorAdd:"新增題目", editorEdit:"修改題目", fZh:"中文（必填）", fJa:"日文（選填）", fEn:"英文（選填）",
     phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
-    levelAria:"層級", humorLabel:"幽默 ★", guessLabel:"猜猜看", saveAdd:"新增題目", saveEdit:"儲存修改", cancel:"取消",
+    levelAria:"層級", humorLabel:"幽默 ★", guessLabel:"猜猜看", partnerLabel:"伴侶卡", saveAdd:"新增題目", saveEdit:"儲存修改", cancel:"取消",
     needText:"先寫下中文題目內容。", saved:"已儲存修改。", added:lv=>`已新增到${lv}。`, saveFail:"沒有存成功，請稍後再試一次。",
     listTitle:n=>`題目（${n}）`, filterAll:"全部層級", listEmpty:"這裡還沒有題目，從上面新增第一題吧。",
     edit:"編輯", del:"刪除", delConfirm:"確定刪除", noTr:"",
@@ -286,19 +291,19 @@ const STR = {
   },
   ja:{
     langBtn:"日", langName:"日本語", title:"恋話匣子", docTitle:"恋話匣子｜恋愛トークカード", tabPlay:"カード", tabManage:"質問リスト",
-    onlyHumor:"ユーモアのみ ★", onlyGuess:"当ててみようのみ", cardAria:"カードを引く", draw:"1枚引く", next:"次のカード", shuffle:"シャッフル",
+    onlyHumor:"ユーモアのみ ★", onlyGuess:"当ててみようのみ", onlyPartner:"パートナーカードのみ", partnerOnlyNote:"（パートナーカードのみ）", partnerExtra:n=>`（ほかにパートナーカードが${n}枚。チェックすると出てきます）`, cardAria:"カードを引く", draw:"1枚引く", next:"次のカード", shuffle:"シャッフル",
     loading:"読み込み中…", hintStart:n=>`全${n}枚。カードか「1枚引く」をタップしてスタート`, hintLeft:n=>`このラウンド残り${n}枚`,
     hintDone:"このラウンドは終わり。次のカードから新しいラウンド",
-    emptyFilter:(lv,h,g)=>`${lv ? lv+"には" : ""}条件に合う質問がありません。${[h?"「ユーモアのみ」":"",g?"「当ててみようのみ」":""].filter(Boolean).join("か")}のチェックを外すと引けます`,
-    emptyAll:"まだ質問がありません。「質問リスト」から追加してね", badgeHumor:"★ ユーモア", badgeGuess:"当ててみよう", count:n=>`${n}枚`,
+    emptyFilter:(lv,h,g,pt)=>`${lv ? lv+"には" : ""}条件に合う質問がありません。${[h?"「ユーモアのみ」":"",g?"「当ててみようのみ」":"",pt?"「パートナーカードのみ」":""].filter(Boolean).join("か")}のチェックを外すと引けます`,
+    emptyAll:"まだ質問がありません。「質問リスト」から追加してね", badgeHumor:"★ ユーモア", badgeGuess:"当ててみよう", badgePartner:"パートナー", count:n=>`${n}枚`,
     rulesTitle:"おすすめの遊び方",
-    rules:["まずは「軽め」から。打ち解けてきたら「普通」「深め」へ。", "ふたりで交代に引いて、引いた人が質問し、自分も答えよう。", "どの質問でも「パス」してOK。理由はいらない。", "相手の答えはまず最後まで聞いて、すぐに否定したり評価したりしないこと。", "当ててみようカード：先に相手の答えを予想してから、本人に答えてもらおう。外れたら、相手のことをまたひとつ知れたってこと。"],
+    rules:["まずは「軽め」から。打ち解けてきたら「普通」「深め」へ。", "ふたりで交代に引いて、引いた人が質問し、自分も答えよう。", "どの質問でも「パス」してOK。理由はいらない。", "相手の答えはまず最後まで聞いて、すぐに否定したり評価したりしないこと。", "当ててみようカード：先に相手の答えを予想してから、本人に答えてもらおう。外れたら、相手のことをまたひとつ知れたってこと。", "パートナーカード：恋人や夫婦向けの質問。ふだんは出てこず、「パートナーカードのみ」をチェックしたときだけ引けます。"],
     statusDb:n=>`全${n}問。変更はこのページに自動保存され、共有した友だちにも反映されます。`, statusLocal:n=>`全${n}問。この端末のブラウザに保存されています。`,
     statusMissing:n=>n?`（うち${n}問は日本語訳がないため、日本語モードでは出てきません）`:"",
     roNotice:"この質問リストは閲覧専用です。カードは引けますが、質問の追加や編集はできません。",
     editorAdd:"質問を追加", editorEdit:"質問を編集", fZh:"中国語（必須）", fJa:"日本語（任意）", fEn:"英語（任意）",
     phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
-    levelAria:"レベル", humorLabel:"ユーモア ★", guessLabel:"当ててみよう", saveAdd:"追加する", saveEdit:"変更を保存", cancel:"キャンセル",
+    levelAria:"レベル", humorLabel:"ユーモア ★", guessLabel:"当ててみよう", partnerLabel:"パートナーカード", saveAdd:"追加する", saveEdit:"変更を保存", cancel:"キャンセル",
     needText:"中国語の質問文を入力してください。", saved:"変更を保存しました。", added:lv=>`「${lv}」に追加しました。`, saveFail:"保存できませんでした。もう一度試してください。",
     listTitle:n=>`質問（${n}）`, filterAll:"すべてのレベル", listEmpty:"まだ質問がありません。上から最初の質問を追加してね。",
     edit:"編集", del:"削除", delConfirm:"本当に削除", noTr:"日本語訳なし",
@@ -309,19 +314,19 @@ const STR = {
   },
   en:{
     langBtn:"EN", langName:"English", title:"Love Cards", docTitle:"Love Cards", tabPlay:"Draw", tabManage:"Questions",
-    onlyHumor:"Funny only ★", onlyGuess:"Guess only", cardAria:"Draw a card", draw:"Draw a card", next:"Next card", shuffle:"Reshuffle",
+    onlyHumor:"Funny only ★", onlyGuess:"Guess only", onlyPartner:"Partner only", partnerOnlyNote:" (partner cards only)", partnerExtra:n=>` (plus ${n} partner ${n===1?"card":"cards"}, shown only when checked)`, cardAria:"Draw a card", draw:"Draw a card", next:"Next card", shuffle:"Reshuffle",
     loading:"Loading…", hintStart:n=>`${n} ${n===1?"card":"cards"}. Tap the card or "Draw a card" to start`, hintLeft:n=>`${n} ${n===1?"card":"cards"} left this round`,
     hintDone:"Round complete. The next card starts a new round",
-    emptyFilter:(lv,h,g)=>`No questions match${lv ? " in "+lv : ""}. Uncheck ${[h?"\"Funny only\"":"",g?"\"Guess only\"":""].filter(Boolean).join(" or ")} to keep drawing`,
-    emptyAll:"No questions yet. Add some in Questions", badgeHumor:"★ Funny", badgeGuess:"Guess", count:n=>`${n} ${n===1?"card":"cards"}`,
+    emptyFilter:(lv,h,g,pt)=>`No questions match${lv ? " in "+lv : ""}. Uncheck ${[h?"\"Funny only\"":"",g?"\"Guess only\"":"",pt?"\"Partner only\"":""].filter(Boolean).join(" or ")} to keep drawing`,
+    emptyAll:"No questions yet. Add some in Questions", badgeHumor:"★ Funny", badgeGuess:"Guess", badgePartner:"Partner", count:n=>`${n} ${n===1?"card":"cards"}`,
     rulesTitle:"How to play",
-    rules:["Start with Light, then move to Medium and Deep as you open up.", "Take turns drawing. Whoever draws asks, then answers too.", "Anyone can say \"pass\" on any question, no explanation needed.", "Really listen to each other's answers before reacting or judging.", "Guess cards: guess the other person's answer first, then let them reveal it. A wrong guess just means you learned something new."],
+    rules:["Start with Light, then move to Medium and Deep as you open up.", "Take turns drawing. Whoever draws asks, then answers too.", "Anyone can say \"pass\" on any question, no explanation needed.", "Really listen to each other's answers before reacting or judging.", "Guess cards: guess the other person's answer first, then let them reveal it. A wrong guess just means you learned something new.", "Partner cards: questions for couples. They never show up unless \"Partner only\" is checked."],
     statusDb:n=>`${n} ${n===1?"question":"questions"}. Changes save to this page automatically, and friends you share it with will see them.`, statusLocal:n=>`${n} ${n===1?"question":"questions"}, saved in this device's browser.`,
     statusMissing:n=>n?` (${n} ${n===1?"has":"have"} no English version and won't appear in English mode.)`:"",
     roNotice:"This question list is read-only. You can draw cards, but can't add or edit questions.",
     editorAdd:"Add a question", editorEdit:"Edit question", fZh:"Chinese (required)", fJa:"Japanese (optional)", fEn:"English (optional)",
     phZh:"例如：你第一次約會最緊張的是什麼？", phJa:"例：初デートでいちばん緊張したことは？", phEn:"e.g. What made you most nervous on a first date?",
-    levelAria:"Level", humorLabel:"Funny ★", guessLabel:"Guess", saveAdd:"Add question", saveEdit:"Save changes", cancel:"Cancel",
+    levelAria:"Level", humorLabel:"Funny ★", guessLabel:"Guess", partnerLabel:"Partner card", saveAdd:"Add question", saveEdit:"Save changes", cancel:"Cancel",
     needText:"Enter the Chinese question text first.", saved:"Changes saved.", added:lv=>`Added to ${lv}.`, saveFail:"Couldn't save. Try again.",
     listTitle:n=>`Questions (${n})`, filterAll:"All levels", listEmpty:"No questions here yet. Add the first one above.",
     edit:"Edit", del:"Delete", delConfirm:"Confirm delete", noTr:"No English version",
@@ -338,8 +343,8 @@ const lvShort = (k) => LEVEL_TEXT[lang][k][2];
 function qText(q){ return lang==="zh" ? q.text : (typeof q[lang]==="string" && q[lang].trim() ? q[lang] : null); }
 
 const LEVELS = {light:1, medium:1, deep:1};
-// Built-in questions: [level, Chinese, humor, guess, Japanese, English]
-const STARTER_IDS = ["l001", "l002", "l003", "l004", "l005", "l006", "l007", "l008", "l009", "l010", "l011", "l012", "l013", "l014", "l015", "l016", "l017", "l018", "l019", "l020", "l021", "l022", "l023", "l024", "l025", "l026", "l027", "l028", "l029", "l030", "l031", "l032", "l033", "l034", "l035", "l036", "l037", "l038", "l039", "l040", "l041", "l042", "l043", "l044", "l045", "l046", "l047", "l048", "l049", "l050", "l051", "l052", "l053", "l054", "l055", "l056", "l057", "l058", "l059", "l060", "l061", "l062", "l063", "l064", "l065", "l066", "l067", "l068", "l069", "l070", "l071", "l072", "l073", "l074", "l075", "l076", "l077", "l078", "l079", "l080", "l081", "l082", "l083", "l084", "l085", "l086", "l087", "l088"];
+// Built-in questions: [level, Chinese, humor, guess, Japanese, English, partner]
+const STARTER_IDS = ["l001", "l002", "l003", "l004", "l005", "l006", "l007", "l008", "l009", "l010", "l011", "l012", "l013", "l014", "l015", "l016", "l017", "l018", "l019", "l020", "l021", "l022", "l023", "l024", "l025", "l026", "l027", "l028", "l029", "l030", "l031", "l032", "l033", "l034", "l035", "l036", "l037", "l038", "l039", "l040", "l041", "l042", "l043", "l044", "l045", "l046", "l047", "l048", "l049", "l050", "l051", "l052", "l053", "l054", "l055", "l056", "l057", "l058", "l059", "l060", "l061", "l062", "l063", "l064", "l065", "l066", "l067", "l068", "l069", "l070", "l071", "l072", "l073", "l074", "l075", "l076", "l077", "l078", "l079", "l080", "l081", "l082", "l083", "l084", "l085", "l086", "l087", "l088", "l089", "l090", "l091", "l092", "l093", "l094", "l095", "l096", "l097", "l098", "l099", "l100", "l101", "l102", "l103", "l104", "l105", "l106", "l107", "l108", "l109", "l110", "l111", "l112", "l113", "l114", "l115", "l116", "l117", "l118", "l119", "l120", "l121", "l122", "l123", "l124", "l125", "l126", "l127", "l128", "l129", "l130", "l131", "l132", "l133", "p001", "p002", "p003", "p004", "p005", "p006", "p007", "p008", "p009", "p010", "p011", "p012", "p013", "p014", "p015", "p016", "p017", "p018", "p019", "p020", "p021", "p022", "p023", "p024", "p025", "p026", "p027", "p028", "p029", "p030", "p031", "p032", "p033", "p034", "p035", "p036"];
 const STARTER = [
  ["light", "你心目中最浪漫的約會是什麼樣子？", 0, 0, "理想のいちばんロマンチックなデートって、どんな感じ？", "What does your idea of the most romantic date look like?"],
  ["light", "什麼樣的小舉動，最容易讓你心動？", 0, 0, "どんなちょっとした仕草に、いちばんドキッとする？", "What small gesture is most likely to make your heart skip a beat?"],
@@ -428,8 +433,89 @@ const STARTER = [
  ["deep", "你覺得自己在感情裡，最容易忽略的是什麼？", 0, 0, "恋愛で、自分がいちばん見落としがちなことは何だと思う？", "What do you think you're most likely to overlook in a relationship?"],
  ["deep", "如果愛會隨著時間改變，你希望它變成什麼樣子？", 0, 0, "愛が時間とともに変わっていくとしたら、どんな形になってほしい？", "If love changes over time, what do you hope it turns into?"],
  ["deep", "你希望在一段感情裡，被記住的是什麼樣的自己？", 0, 0, "ひとつの恋の中で、どんな自分として覚えていてほしい？", "In a relationship, what version of yourself do you hope is remembered?"],
- ["deep", "猜猜看對方心中最理想的感情是什麼樣子，再請他說說看。", 0, 1, "相手が思い描く理想の関係を当ててみて、本人に話してもらおう。", "Guess what the other person's ideal relationship looks like, then let them tell you about it."]
-].map((r,i)=>({id:STARTER_IDS[i],level:r[0],text:r[1],humor:!!r[2],guess:!!r[3],ja:r[4]||"",en:r[5]||"",createdAt:i}));
+ ["deep", "猜猜看對方心中最理想的感情是什麼樣子，再請他說說看。", 0, 1, "相手が思い描く理想の関係を当ててみて、本人に話してもらおう。", "Guess what the other person's ideal relationship looks like, then let them tell you about it."],
+ ["light", "有沒有一種味道，會讓你想起戀愛的感覺？", 0, 0, "恋をしている気分を思い出す匂いってある？", "Is there a smell that reminds you of being in love?"],
+ ["light", "你心中最有戀愛感的季節或節日是什麼？", 0, 0, "いちばん恋愛っぽいと思う季節やイベントは？", "What season or holiday feels the most romantic to you?"],
+ ["light", "有沒有一首歌，你很想跟喜歡的人一起聽？", 0, 0, "好きな人と一緒に聴きたい曲ってある？", "Is there a song you'd love to listen to with someone you like?"],
+ ["light", "你比較喜歡在家約會，還是出門約會？", 0, 0, "おうちデート派？それともお出かけデート派？", "Do you prefer dates at home or going out?"],
+ ["light", "約會時你喜歡拍很多照片，還是專心享受當下？", 0, 0, "デート中は写真をたくさん撮る派？それともその場を楽しむ派？", "On dates, do you take lots of photos or just enjoy the moment?"],
+ ["light", "一起旅行時，你最在意的是什麼？（行程、吃、住、拍照……）", 0, 0, "一緒に旅行するとき、いちばん大事にしたいことは？（予定、ごはん、宿、写真……）", "When you travel together, what matters most to you? (Plans, food, where you stay, photos…)"],
+ ["light", "在愛裡，你比較喜歡照顧人，還是被照顧？", 0, 0, "恋愛では、世話を焼くのが好き？それとも焼かれたい？", "In love, do you prefer taking care of someone or being taken care of?"],
+ ["light", "收到喜歡的人的訊息，你會馬上回，還是等一下再回？", 0, 0, "好きな人からメッセージが来たら、すぐ返す？それとも少し待つ？", "When someone you like texts you, do you reply right away or wait a bit?"],
+ ["light", "你覺得什麼樣的穿著打扮最有魅力？", 0, 0, "どんな服装やスタイルにいちばん惹かれる？", "What kind of style or outfit do you find most attractive?"],
+ ["light", "說一個你欣賞對方的地方。", 0, 0, "相手のいいところをひとつ伝えてみよう。", "Tell the other person one thing you appreciate about them."],
+ ["light", "如果你今天的戀愛運是一則天氣預報，會是什麼天氣？", 1, 0, "今日の恋愛運を天気予報にすると、どんな天気？", "If your love luck today were a weather forecast, what would it be?"],
+ ["light", "如果用一道甜點形容你理想的感情，會是什麼？", 1, 0, "理想の恋愛をスイーツにたとえると、何？", "If your ideal relationship were a dessert, what would it be?"],
+ ["light", "約會前，你大概要花多久時間準備？", 1, 0, "デートの前、準備にどれくらい時間かかる？", "How long does it take you to get ready for a date?"],
+ ["light", "猜猜看對方旅行時最在意什麼，再請他公布。", 0, 1, "相手が旅行でいちばん大事にしていることを当ててみて、本人に答え合わせしてもらおう。", "Guess what the other person cares about most when traveling, then have them reveal the answer."],
+ ["light", "猜猜看對方最喜歡的節日是哪一個，再請他公布。", 0, 1, "相手がいちばん好きな行事やイベントを当ててみて、本人に答え合わせしてもらおう。", "Guess the other person's favorite holiday, then have them reveal the answer."],
+ ["medium", "如果對方想出國工作兩年，你會怎麼想？", 0, 0, "もし相手が2年間海外で働きたいと言ったら、どう思う？", "If the other person wanted to work abroad for two years, how would you feel?"],
+ ["medium", "如果對方忘了你很在意的紀念日，你會怎麼反應？", 0, 0, "大事にしている記念日を相手が忘れていたら、どうする？", "If the other person forgot an anniversary that matters to you, how would you react?"],
+ ["medium", "如果你和對方的朋友處不來，你會怎麼做？", 0, 0, "相手の友だちとうまくいかなかったら、どうする？", "If you didn't get along with the other person's friends, what would you do?"],
+ ["medium", "如果發現彼此作息差很多，你會怎麼調整？", 0, 0, "ふたりの生活リズムが全然違ったら、どう合わせる？", "If you found your daily rhythms were really different, how would you adjust?"],
+ ["medium", "你覺得兩個人住在一起，最需要先談好的是什麼？", 0, 0, "一緒に住むなら、最初に話し合っておきたいことは？", "If you lived together, what would you most want to agree on first?"],
+ ["medium", "家事要怎麼分工，你才會覺得公平？", 0, 0, "家事をどう分けたら、公平だと感じる？", "How would chores need to be split for it to feel fair to you?"],
+ ["medium", "你覺得新鮮感重要嗎？要怎麼維持？", 0, 0, "恋愛のドキドキ感って大事？どうやって保つ？", "Does keeping things fresh matter to you? How would you do it?"],
+ ["medium", "交往久了，你覺得最需要刻意維持的是什麼？", 0, 0, "付き合いが長くなったら、意識して大切にしたいことは？", "After being together a long time, what do you think most needs conscious effort?"],
+ ["medium", "有沒有一首歌，會讓你想起某段感情？", 0, 0, "聴くと、ある恋を思い出す曲ってある？", "Is there a song that reminds you of a past relationship?"],
+ ["medium", "在愛裡，你比較常主動，還是等對方靠近？", 0, 0, "恋愛では、自分からいく派？それとも相手が来るのを待つ派？", "In love, do you usually make the first move or wait for the other person?"],
+ ["medium", "最近有什麼事，你想跟對方說聲謝謝？", 0, 0, "最近、相手に「ありがとう」と伝えたいことってある？", "Is there something recent you'd like to thank the other person for?"],
+ ["medium", "你覺得對方身上，有什麼是你想學習的？", 0, 0, "相手から学びたいと思うところは？", "What's something about the other person you'd like to learn from?"],
+ ["medium", "你覺得自己在感情裡，最可愛的缺點是什麼？", 1, 0, "恋愛での自分の「かわいい欠点」って何だと思う？", "What do you think is your most lovable flaw in a relationship?"],
+ ["medium", "如果替你的戀愛風格取一個「必殺技」名稱，會叫什麼？", 1, 0, "自分の恋愛スタイルに必殺技の名前をつけるなら？", "If your dating style had a special-move name, what would it be called?"],
+ ["medium", "猜猜看對方最不想做的家事是什麼，再請他公布。", 0, 1, "相手がいちばんやりたくない家事を当ててみて、本人に答え合わせしてもらおう。", "Guess the chore the other person hates most, then have them reveal the answer."],
+ ["deep", "如果你們對未來的規劃不一樣（例如要不要小孩），你會怎麼面對？", 0, 0, "ふたりの将来の考えが違ったら（たとえば子どもを持つかどうか）、どう向き合う？", "If you and a partner wanted different futures (like whether to have kids), how would you handle it?"],
+ ["deep", "如果對方陷入很大的低潮，你覺得自己能陪到什麼程度？", 0, 0, "相手がすごく落ち込んでいるとき、自分はどこまで寄り添えると思う？", "If a partner hit a really low point, how far do you think you could be there for them?"],
+ ["deep", "如果發現對方隱瞞了一件事，你最在意的是什麼？", 0, 0, "相手が何かを隠していたとわかったら、いちばん気になるのはどこ？", "If you found out a partner had been hiding something, what would bother you most?"],
+ ["deep", "你覺得長久的感情，最容易在哪裡出現裂痕？", 0, 0, "長く続く関係って、どこからひびが入りやすいと思う？", "Where do you think long relationships are most likely to crack?"],
+ ["deep", "熱戀期過去後，你覺得什麼會讓兩個人繼續走下去？", 0, 0, "熱々の時期が終わったあと、ふたりを支え続けるものは何だと思う？", "Once the honeymoon phase is over, what do you think keeps two people going?"],
+ ["deep", "感情變成習慣之後，你覺得最該珍惜、也最該小心的是什麼？", 0, 0, "恋が当たり前になったとき、いちばん大切にすべきこと、気をつけるべきことは？", "When love becomes routine, what should you treasure most, and what should you watch out for?"],
+ ["deep", "在愛裡，你最怕自己變成什麼樣子？", 0, 0, "恋愛の中で、自分がどうなってしまうのがいちばん怖い？", "In love, what are you most afraid of turning into?"],
+ ["deep", "你在愛裡最真實的樣子，是什麼模樣？", 0, 0, "恋をしているときの、いちばん素の自分ってどんな感じ？", "What does the most honest version of you look like in love?"],
+ ["deep", "你需要被愛的方式，跟你愛人的方式一樣嗎？", 0, 0, "自分が愛されたい形と、自分が人を愛する形は同じ？", "Is the way you need to be loved the same as the way you love?"],
+ ["deep", "有沒有一段感情的結束，讓你重新認識了自己？", 0, 0, "ある恋の終わりで、自分のことを新しく知ったことってある？", "Has the end of a relationship ever helped you see yourself in a new way?"],
+ ["deep", "有沒有一個地方，因為某段感情而對你有特別的意義？", 0, 0, "ある恋のおかげで、特別な意味を持つようになった場所ってある？", "Is there a place that became special to you because of a relationship?"],
+ ["deep", "過去的感情裡，有什麼是你很感謝它教會你的？", 0, 0, "過去の恋愛が教えてくれたことで、感謝していることは？", "What has a past relationship taught you that you're grateful for?"],
+ ["deep", "對你來說，「陪伴」最重要的是什麼？", 0, 0, "自分にとって、「そばにいる」ことでいちばん大事なのは何？", "What matters most to you about being there for each other?"],
+ ["deep", "你覺得兩個人一起變老，最美的樣子是什麼？", 0, 0, "ふたりで一緒に年をとっていく、いちばん素敵な姿ってどんなもの？", "What do you think is the most beautiful way for two people to grow old together?"],
+ ["deep", "猜猜看對方覺得感情裡最重要的承諾是什麼，再請他說說看。", 0, 1, "相手が恋愛でいちばん大切だと思う約束を当ててみて、本人に話してもらおう。", "Guess what promise the other person thinks matters most in a relationship, then let them tell you."],
+ ["light", "你第一次見到我的時候，對我是什麼印象？", 0, 0, "初めて会ったとき、私のことどう思った？", "What was your first impression of me?", 1],
+ ["light", "我們第一次約會，你印象最深的是什麼？", 0, 0, "ふたりの初デートで、いちばん印象に残ってることは？", "What do you remember most about our first date?", 1],
+ ["light", "你最喜歡我們一起做的哪件小事？", 0, 0, "ふたりで一緒にする小さなことで、いちばん好きなのは？", "What's your favorite little thing we do together?", 1],
+ ["light", "你覺得我最常說的口頭禪是什麼？", 1, 0, "私のいちばんの口ぐせって何だと思う？", "What do you think my most common catchphrase is?", 1],
+ ["light", "如果我是一種食物，你覺得會是什麼？", 1, 0, "私を食べ物にたとえると、何だと思う？", "If I were a food, what would I be?", 1],
+ ["light", "猜猜看我最喜歡我們的哪一張合照，再拿出來對答案。", 0, 1, "私がいちばん好きなふたりの写真を当ててみて、実際に見せて答え合わせしよう。", "Guess which photo of us is my favorite, then pull it up to check.", 1],
+ ["medium", "我們在一起之後，你最喜歡的一段回憶是什麼？", 0, 0, "付き合ってから、いちばん好きな思い出は？", "What's your favorite memory since we got together?", 1],
+ ["medium", "你覺得我們最合拍的地方是什麼？", 0, 0, "ふたりがいちばん息が合ってると思うところは？", "Where do you think we click the most?", 1],
+ ["medium", "我做過什麼事，讓你覺得被愛？", 0, 0, "私がしたことで、愛されてるって感じたのはどんなとき？", "What have I done that made you feel loved?", 1],
+ ["medium", "有什麼事，你希望我們一起多做一點？", 0, 0, "ふたりでもっと一緒にしたいことってある？", "Is there something you wish we did together more?", 1],
+ ["medium", "你覺得我們吵架時，最常卡住的地方是什麼？", 0, 0, "ふたりがケンカするとき、いちばんこじれやすいのはどこだと思う？", "When we argue, where do you think we get stuck most?", 1],
+ ["medium", "猜猜看我最近最想跟你一起做的事，再請我公布。", 0, 1, "私が最近いちばんふたりでしたいことを当ててみて、答え合わせしよう。", "Guess what I most want to do with you lately, then I'll reveal the answer.", 1],
+ ["deep", "什麼時候，你確定想跟我在一起？", 0, 0, "私と一緒にいたいって確信したのはいつ？", "When did you know you wanted to be with me?", 1],
+ ["deep", "這段感情，讓你改變了什麼？", 0, 0, "この関係で、自分の何が変わったと思う？", "How has our relationship changed you?", 1],
+ ["deep", "有什麼是你希望我更了解你的地方？", 0, 0, "私にもっとわかってほしい自分のことってある？", "What do you wish I understood better about you?", 1],
+ ["deep", "在我們的關係裡，你有沒有一直沒說出口的擔心？", 0, 0, "ふたりの関係で、ずっと言えずにいる不安ってある？", "Is there a worry about us you've never said out loud?", 1],
+ ["deep", "你希望我們五年後是什麼樣子？", 0, 0, "5年後、ふたりはどうなっていたい？", "What do you hope we look like five years from now?", 1],
+ ["deep", "說一件你一直想謝謝我、卻還沒說的事。", 0, 0, "ずっと私に「ありがとう」を言いたかったのに、まだ言えてないことをひとつ教えて。", "Tell me one thing you've wanted to thank me for but haven't yet.", 1],
+ ["light", "你最喜歡我穿哪一套衣服？", 0, 0, "私の服で、いちばん好きなのはどれ？", "Which outfit of mine is your favorite?", 1],
+ ["light", "我們之間有什麼只有我們懂的梗？", 0, 0, "ふたりだけにしか通じないネタってある？", "What's an inside joke only the two of us get?", 1],
+ ["light", "你最喜歡我們去過的哪一家店？", 0, 0, "ふたりで行ったお店で、いちばん好きなのはどこ？", "What's your favorite place we've been to together?", 1],
+ ["light", "如果我們是一組搞笑雙人組，組合名稱會叫什麼？", 1, 0, "ふたりがお笑いコンビだったら、コンビ名は何？", "If we were a comedy duo, what would our name be?", 1],
+ ["light", "你覺得我最像哪一個卡通角色？", 1, 0, "私っていちばんどのアニメキャラに似てると思う？", "Which cartoon character do you think I'm most like?", 1],
+ ["light", "猜猜看我最喜歡你做的哪一道菜（或買給我的食物）。", 0, 1, "あなたが作ってくれた料理（または買ってきてくれた食べ物）で、私がいちばん好きなものを当ててみて。", "Guess which dish you've made for me (or food you've brought me) is my favorite.", 1],
+ ["medium", "你覺得我最近有什麼變化？", 0, 0, "最近の私、何か変わったと思う？", "Have you noticed anything different about me lately?", 1],
+ ["medium", "有什麼是我做了你會很開心，但我可能不知道的？", 0, 0, "私がしたらすごくうれしいのに、私が気づいてなさそうなことってある？", "Is there something that would make you really happy that I might not know about?", 1],
+ ["medium", "你最喜歡我們怎麼和好？", 0, 0, "ふたりの仲直りの仕方で、いちばん好きなのは？", "What's your favorite way for us to make up?", 1],
+ ["medium", "我們最近一次笑到停不下來是什麼時候？", 0, 0, "ふたりで最後に笑いが止まらなくなったのはいつ？", "When was the last time we couldn't stop laughing together?", 1],
+ ["medium", "你覺得我們有什麼相處習慣，可以再調整一下？", 0, 0, "ふたりの過ごし方で、ちょっと変えてみたいところってある？", "Is there a habit in how we spend time together you'd like to adjust?", 1],
+ ["medium", "猜猜看我壓力大的時候，最希望你怎麼做。", 0, 1, "私がストレスでいっぱいのとき、あなたにいちばんしてほしいことを当ててみて。", "Guess what I most want you to do when I'm stressed.", 1],
+ ["deep", "有沒有哪一刻，你覺得特別被我需要？", 0, 0, "私に必要とされてるって、特に感じた瞬間はある？", "Has there been a moment you felt especially needed by me?", 1],
+ ["deep", "你覺得我們一起度過最難的一段時間是什麼時候？", 0, 0, "ふたりで乗り越えた、いちばん大変だった時期はいつだと思う？", "What do you think was the hardest time we've gotten through together?", 1],
+ ["deep", "你最想跟我一起完成的一件事是什麼？", 0, 0, "私と一緒にいちばん叶えたいことは何？", "What's one thing you most want us to do together someday?", 1],
+ ["deep", "有沒有什麼，是你希望我們之間永遠不要改變的？", 0, 0, "ふたりの間で、ずっと変わらないでほしいことってある？", "Is there something between us you hope never changes?", 1],
+ ["deep", "你覺得我們的關係，最珍貴的地方是什麼？", 0, 0, "ふたりの関係で、いちばん大切だと思うところは？", "What do you think is the most precious thing about us?", 1],
+ ["deep", "如果用一句話形容我們，你會怎麼說？", 0, 0, "ふたりのことを一言で表すとしたら？", "If you had to describe us in one sentence, what would you say?", 1]
+].map((r,i)=>({id:STARTER_IDS[i],level:r[0],text:r[1],humor:!!r[2],guess:!!r[3],ja:r[4]||"",en:r[5]||"",partner:!!r[6],createdAt:i}));
 
 const LS_KEY = "love-cards-questions-v1", LS_V2 = "love-cards-unused-v2", LS_OLD = "love-cards-unused-v0";
 const $ = id => document.getElementById(id);
@@ -437,7 +523,7 @@ const $ = id => document.getElementById(id);
 let questions = [];
 let mode = "loading";   // loading | db | local
 let db = null, readOnly = false;
-let level = "all", onlyHumor = false, onlyGuess = false;
+let level = "all", onlyHumor = false, onlyGuess = false, onlyPartner = false;
 let drawn = new Set(), current = null, flipped = false, lockUntil = 0, flipTimer = null;
 let editingId = null, pendingDelete = null;
 
@@ -445,8 +531,8 @@ let editingId = null, pendingDelete = null;
 // The browser keeps its own copy of the question bank. When this file ships a newer
 // built-in list, built-in questions the person never edited are refreshed; their own
 // questions, edits and deletions are kept.
-const pick = q => ({text:q.text, ja:q.ja||"", en:q.en||"", level:q.level, humor:!!q.humor, guess:!!q.guess});
-const same = (a,b) => a && b && a.text===b.text && (a.ja||"")===(b.ja||"") && (a.en||"")===(b.en||"") && a.level===b.level && !!a.humor===!!b.humor && !!a.guess===!!b.guess;
+const pick = q => ({text:q.text, ja:q.ja||"", en:q.en||"", level:q.level, humor:!!q.humor, guess:!!q.guess, partner:!!q.partner});
+const same = (a,b) => a && b && a.text===b.text && (a.ja||"")===(b.ja||"") && (a.en||"")===(b.en||"") && a.level===b.level && !!a.humor===!!b.humor && !!a.guess===!!b.guess && !!a.partner===!!b.partner;
 function starterBase(){ const m = {}; for(const q of STARTER) m[q.id] = pick(q); return m; }
 function mergeWithStarter(list, base){
   const st = new Map(STARTER.map(q=>[q.id,q]));
@@ -529,9 +615,12 @@ const newId = () => "q" + Date.now().toString(36) + Math.random().toString(36).s
 /* ---------- play ---------- */
 function valid(q){ return q && typeof q.text==="string" && LEVELS[q.level] && qText(q); }
 function poolFor(lv){
-  return questions.filter(q => valid(q) && (lv==="all" || q.level===lv) && (!onlyHumor || q.humor) && (!onlyGuess || q.guess));
+  return questions.filter(q => valid(q) && (lv==="all" || q.level===lv) && (!onlyHumor || q.humor) && (!onlyGuess || q.guess) && (onlyPartner ? !!q.partner : !q.partner));
 }
 function pool(){ return poolFor(level); }
+function hiddenPartnerCount(){
+  return questions.filter(q => valid(q) && q.partner && (level==="all" || q.level===level) && (!onlyHumor || q.humor) && (!onlyGuess || q.guess)).length;
+}
 function renderLevels(){
   const box = $("levels"); box.innerHTML = "";
   for(const k of ["all","light","medium","deep"]){
@@ -541,7 +630,7 @@ function renderLevels(){
     const t = document.createElement("b"); t.append(sw, lvName(k));
     const s = document.createElement("small");
     const n = mode==="loading" ? null : poolFor(k).length;
-    s.textContent = (onlyHumor || onlyGuess) && n !== null ? T().count(n) : lvHint(k);
+    s.textContent = (onlyHumor || onlyGuess || onlyPartner) && n !== null ? T().count(n) : lvHint(k);
     if(n === 0) b.classList.add("empty-level");
     b.append(t, s);
     b.onclick = () => { level = k; renderLevels(); resetDeck(); };
@@ -562,8 +651,8 @@ function updateHint(){
   if(mode==="loading"){ $("hint").textContent = s.loading; $("draw").textContent = s.draw; $("draw").disabled = true; return; }
   const p = pool().length;
   if(!p){
-    $("hint").textContent = (onlyHumor || onlyGuess)
-      ? s.emptyFilter(level==="all" ? "" : lvName(level), onlyHumor, onlyGuess)
+    $("hint").textContent = (onlyHumor || onlyGuess || onlyPartner)
+      ? s.emptyFilter(level==="all" ? "" : lvName(level), onlyHumor, onlyGuess, onlyPartner)
       : s.emptyAll;
     $("draw").textContent = s.draw;
     $("draw").disabled = true; return;
@@ -571,7 +660,9 @@ function updateHint(){
   $("draw").disabled = false;
   $("draw").textContent = current ? s.next : s.draw;
   const r = remaining();
-  $("hint").textContent = current ? (r ? s.hintLeft(r) : s.hintDone) : s.hintStart(p);
+  const hp = !onlyPartner && !current ? hiddenPartnerCount() : 0;
+  $("hint").textContent = (current ? (r ? s.hintLeft(r) : s.hintDone) : s.hintStart(p))
+    + (onlyPartner ? s.partnerOnlyNote : (hp ? s.partnerExtra(hp) : ""));
 }
 function renderCardBack(){
   const c = level==="all" ? "any" : level;
@@ -592,6 +683,7 @@ function fillFront(q){
   add(lvName(q.level));
   if(q.humor) add(T().badgeHumor);
   if(q.guess) add(T().badgeGuess);
+  if(q.partner) add(T().badgePartner);
 }
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function draw(){
@@ -632,7 +724,7 @@ function renderManage(){
   $("status").textContent = mode==="db" ? s.statusDb(questions.length) + s.statusMissing(missing)
                           : mode==="local" ? s.statusLocal(questions.length) + s.statusMissing(missing) : s.loading;
   $("ro-notice").hidden = !readOnly;
-  for(const id of ["f-text","f-ja","f-en","f-level","f-humor","f-guess","f-save","btn-import","btn-do-import"]) $(id).disabled = readOnly;
+  for(const id of ["f-text","f-ja","f-en","f-level","f-humor","f-guess","f-partner","f-save","btn-import","btn-do-import"]) $(id).disabled = readOnly;
   $("editor-title").textContent = editingId ? s.editorEdit : s.editorAdd;
   $("f-save").textContent = editingId ? s.saveEdit : s.saveAdd;
   const filter = $("list-filter").value;
@@ -651,7 +743,7 @@ function renderManage(){
     body.append(t);
     if(lang!=="zh" && qText(q)){ const z=document.createElement("div"); z.className="tr"; z.textContent=q.text; body.append(z); }
     const m = document.createElement("div"); m.className="meta";
-    m.textContent = [lvName(q.level), q.humor?s.badgeHumor:"", q.guess?s.badgeGuess:"", (lang!=="zh" && !qText(q)) ? s.noTr : ""].filter(Boolean).join(" · ");
+    m.textContent = [lvName(q.level), q.humor?s.badgeHumor:"", q.guess?s.badgeGuess:"", q.partner?s.badgePartner:"", (lang!=="zh" && !qText(q)) ? s.noTr : ""].filter(Boolean).join(" · ");
     body.append(m);
     const ops = document.createElement("div"); ops.className="ops";
     if(!readOnly){
@@ -671,7 +763,7 @@ function startEdit(q){
   editingId = q.id;
   $("f-text").value = q.text; $("f-ja").value = q.ja || ""; $("f-en").value = q.en || "";
   $("f-level").value = q.level;
-  $("f-humor").checked = !!q.humor; $("f-guess").checked = !!q.guess;
+  $("f-humor").checked = !!q.humor; $("f-guess").checked = !!q.guess; $("f-partner").checked = !!q.partner;
   $("f-cancel").hidden = false; $("f-msg").textContent = "";
   renderManage();
   $("editor").scrollIntoView({behavior: reduced()?"auto":"smooth", block:"start"});
@@ -680,7 +772,7 @@ function startEdit(q){
 function stopEdit(){
   editingId = null;
   $("f-text").value = ""; $("f-ja").value = ""; $("f-en").value = "";
-  $("f-humor").checked = false; $("f-guess").checked = false;
+  $("f-humor").checked = false; $("f-guess").checked = false; $("f-partner").checked = false;
   $("f-cancel").hidden = true;
   renderManage();
 }
@@ -690,7 +782,7 @@ async function submit(){
   if(!text){ $("f-msg").textContent = s.needText; $("f-text").focus(); return; }
   const base = editingId ? questions.find(q=>q.id===editingId) : null;
   const q = { id: editingId || newId(), text, ja: $("f-ja").value.trim(), en: $("f-en").value.trim(), level: $("f-level").value,
-    humor: $("f-humor").checked, guess: $("f-guess").checked,
+    humor: $("f-humor").checked, guess: $("f-guess").checked, partner: $("f-partner").checked,
     createdAt: base ? (base.createdAt||0) : Date.now() };
   const wasEdit = !!editingId;
   $("f-save").disabled = true;
@@ -702,7 +794,7 @@ async function submit(){
 /* export / import */
 function toggleBox(id){ for(const b of ["export-box","import-box"]) $(b).classList.toggle("open", b===id && !$(b).classList.contains("open")); $("io-msg").textContent=""; }
 function doExport(){
-  const data = questions.map(({text,ja,en,level,humor,guess})=>({text,ja:ja||"",en:en||"",level,humor:!!humor,guess:!!guess}));
+  const data = questions.map(({text,ja,en,level,humor,guess,partner})=>({text,ja:ja||"",en:en||"",level,humor:!!humor,guess:!!guess,partner:!!partner}));
   $("export-text").value = JSON.stringify(data, null, 1);
   toggleBox("export-box");
 }
@@ -723,7 +815,7 @@ async function doImport(){
   let n = 0;
   for(const x of ok){
     const str = v => typeof v==="string" ? v.trim().slice(0,300) : "";
-    const saved = await saveQuestion({id:newId(), text:x.text.trim().slice(0,200), ja:str(x.ja), en:str(x.en), level:x.level, humor:!!x.humor, guess:!!x.guess, createdAt:Date.now()+n});
+    const saved = await saveQuestion({id:newId(), text:x.text.trim().slice(0,200), ja:str(x.ja), en:str(x.en), level:x.level, humor:!!x.humor, guess:!!x.guess, partner:!!x.partner, createdAt:Date.now()+n});
     if(!saved) break; n++;
   }
   $("btn-do-import").disabled = readOnly;
@@ -792,6 +884,7 @@ $("draw").onclick = draw;
 $("shuffle").onclick = resetDeck;
 $("only-humor").onchange = e=>{ onlyHumor = e.target.checked; renderLevels(); resetDeck(); };
 $("only-guess").onchange = e=>{ onlyGuess = e.target.checked; renderLevels(); resetDeck(); };
+$("only-partner").onchange = e=>{ onlyPartner = e.target.checked; renderLevels(); resetDeck(); };
 $("f-save").onclick = submit;
 $("f-cancel").onclick = ()=>{ stopEdit(); $("f-msg").textContent=""; };
 $("list-filter").onchange = renderManage;
